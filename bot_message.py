@@ -1,5 +1,7 @@
 import db_handler as db
 import random
+import time
+import datetime
 from aiogram.types import ReplyKeyboardRemove, \
     ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardMarkup, InlineKeyboardButton
@@ -40,7 +42,7 @@ langs = {
         'RosterUpdated': 'Guild roster updated!',
         'ReportOK': 'Thanks for sending report',
         'SettingOverview': "Setting Overview",  
-        'UserNotRegister': "I don't talk to strangers.\nSend me your cellphone number ☎️ to suscribe to alerts.\n\n /subscribe ########",          
+        'UserNotRegister': "Hello i am a fast alert Bot.\nSend me your cellphone number ☎️ to suscribe to alerts.\n\n /subscribe ########",          
         'UnknownCWMsg': 'ChatWars Message not recognized!',        
         'Stock': 'Generating deposit msg!',        
         'Welcome': "Welcome back",
@@ -49,6 +51,7 @@ langs = {
         'AddedAlert': "✔️ Alert enabled!!!",      
         'RemoveAlert': "❌ Alert disabled!!!",
         'RemovePhone': "❌ Deleted!!!",
+        'Done': "✔️ Done!!!",
         'Subscribed': "You are now subscribed!!!", 
         '5ta': "⚠️⚠️ Modulo en 5ta y 42 ⚠️⚠️!!!", 
         'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Your cellphone number must be 8-10  digits long and no string or symbols!!!"      
@@ -88,7 +91,7 @@ langs = {
         'RosterUpdated': 'Lista del gremio actualizada!',
         'ReportOK': 'Gracias por enviar el reporte',
         'SettingOverview': "Descripción general de la configuración",  
-        'UserNotRegister': "Yo no hablo con extraños.\nEnviame tu numero ☎️ para suscribirte a las alertas\n\n /subscribe ########",          
+        'UserNotRegister': "Hola soy un Bot de alerta rapida.\nEnviame tu numero ☎️ para suscribirte a las alertas\n\n /subscribe ########",          
         'UnknownCWMsg': 'Mensaje de ChatWars no reconocido!',        
         'Stock': 'Generando mensaje de deposito!',        
         'Welcome': "Bienvenido de vuelta",
@@ -97,12 +100,34 @@ langs = {
         'AddedAlert': "✔️ Alerta habilitada!!!",      
         'RemoveAlert': "❌ Alerta deshabilitada!!!",      
         'RemovePhone': "❌ Eliminado!!!",      
+        'Done': "✔️ Hecho!!!",      
         'Subscribed': "Usted esta suscrito!!!",
         '5ta': "⚠️⚠️ Modulo en 5ta y 42 ⚠️⚠️!!!",
         'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Su numero debe ser de 8-10 digitos y sin caracteres o simbolos!!!"       
     }
 }
+def days_between(d1, d2):
+    timeStampObj = (d1 - d2)
+    
+    return timeStampObj
 
+def get_all_users_admin():
+    res = "👥 Listado de Usuarios: \n\n"
+    users = db.get_all_users()
+    if users:
+        for u in users:
+            pagado = days_between(time.time() ,u.pay_date)
+            pagado = datetime.datetime.fromtimestamp(pagado).days
+            if pagado > 30: 
+                db.disable_user_subscription()
+                res += '- {} /ban {} /enable {}\n'.format(u.name, u.tgid, u.tgid)
+            else:
+                if u.pay:
+                    res += '- {} /ban {} /disable {}\n'.format(u.name, u.tgid, u.tgid)
+                else:
+                    res += '- {} /ban {} /enable {}\n'.format(u.name, u.tgid, u.tgid)
+    return res
+    
 def get_user_alert_status_prod(tgid=None):
     res = "🔊 Estas son sus alertas activas:\n\n"
     # Settings4User todos los settings activos por el usuario
@@ -119,6 +144,7 @@ def get_user_alert_status_prod(tgid=None):
         res += '----No tiene alertas activas---- \n\n'
         res += 'Seleccione sobre que desea ser notificado. \n'
         return res
+    
 def get_user_alert_status_url(tgid=None):
     res = "🔊 Estas son sus alertas activas:\n\n"
     # Settings4User todos los settings activos por el usuario

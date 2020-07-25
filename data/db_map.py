@@ -16,6 +16,8 @@ class User(Base):
     lang = Column(String(255))
     tgid = Column(Integer, nullable=True)
     phone = Column(Integer, nullable=True)
+    pay = Column(Integer, nullable=True)
+    pay_date = Column(Integer, nullable=True)
     # payment = Column(Integer, nullable=True)
 
 class Productos(Base):

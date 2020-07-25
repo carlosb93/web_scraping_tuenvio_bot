@@ -7,6 +7,7 @@ from db_handler import is_admin
 class Navigation(StatesGroup):
     main = State()  # Will be represented in storage as 'Navigation:main'
     settings = State()  # Will be represented in storage as 'Navigation:settings'
+    admin = State()  # Will be represented in storage as 'Navigation:settings'
 
 
 
@@ -21,6 +22,12 @@ def load_main(message):
 def load_settings(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
     markup.add("🔙 Atras")
+    return markup  
+ 
+def load_admin(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+    markup.add("👥 Users")
+    markup.add("🔙 Atras")
     return markup   
 
 
@@ -33,4 +40,8 @@ async def go_to(view, message, text):
     elif view == 'settings':
         await Navigation.settings.set()
         markup = load_settings(message)
+        await message.answer(text, reply_markup=markup, parse_mode=types.ParseMode.HTML) 
+    elif view == 'admin':
+        await Navigation.admin.set()
+        markup = load_admin(message)
         await message.answer(text, reply_markup=markup, parse_mode=types.ParseMode.HTML) 

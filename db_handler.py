@@ -2,7 +2,7 @@ import os
 import json
 import sqlite3
 from numpy import genfromtxt
-from time import time
+import time
 from data.db_map import Base, Productos, Modulos, ProdModules, User, Settings, Settings4User
 import sqlalchemy
 from sqlalchemy import create_engine
@@ -92,7 +92,7 @@ def enable_conf_user(tgid=None, name=None): # ✔️
         
 # User
 def create_user(name=None,lang=None, arroba=None, tgid=None):
-    s.add(User(name=name,lang=lang, arroba=arroba, tgid=tgid))
+    s.add(User(name=name,lang=lang, arroba=arroba, tgid=tgid, pay=True, pay_date=time.time()))
     s.commit()
     return 'New User Created'
 
@@ -110,6 +110,26 @@ def del_user_phone(tgid=None):
     user = user.filter(User.tgid == tgid).one()
     if user:
         user.phone = ' '
+        user.pay = False
+    s.add(user)
+    s.commit()
+    return 'Succesfully'
+
+def disable_user_subscription(tgid=None):
+    user = s.query(User)
+    user = user.filter(User.tgid == tgid).one()
+    if user:
+        user.pay = False
+    s.add(user)
+    s.commit()
+    return 'Succesfully'
+
+def enable_user_subscription(tgid=None):
+    user = s.query(User)
+    user = user.filter(User.tgid == tgid).one()
+    if user:
+        user.pay = True
+        user.pay_date = time.time()
     s.add(user)
     s.commit()
     return 'Succesfully'
@@ -125,6 +145,7 @@ def get_user(uid=None, name=None):
             return qry.one()
         except sqlalchemy.orm.exc.NoResultFound:
             pass
+        
 def get_all_users():
     user = s.query(User)
     
@@ -173,6 +194,16 @@ def del_user_alert(uid=None, setting_id=None):
     if setting:
         try:
             setting.delete()
+        except sqlalchemy.orm.exc.NoResultFound:
+            pass
+        
+def ban_user(tgid=None):
+    usuario = s.query(User)
+    if tgid:
+        usuario = usuario.filter(User.tgid == tgid)
+    if usuario:
+        try:
+            usuario.delete()
         except sqlalchemy.orm.exc.NoResultFound:
             pass
         

@@ -67,6 +67,10 @@ async def process_main(message: types.Message):
         elif message.text == "🔰 Admin" and db.is_admin(message['from']['id']):
             await go_to('admin', message, bm.get_static_message('WelcomeAdmin'))
             
+        elif message.text == "👥 Users" and db.is_admin(message['from']['id']):
+            rply = bm.get_all_users_admin()
+            await message.answer(text=rply, parse_mode=types.ParseMode.HTML)
+            
     else:
         db.create_user(name=message['from']['first_name'],lang=message['from']['language_code'],arroba=message['from']['username'],tgid=message['from']['id'])
         await message.reply(bm.get_static_message('UserNotRegister'))
@@ -81,6 +85,34 @@ async def general_commands(message: types.Message):
         if message.text.startswith('/removeme'):
             db.del_user_phone(tgid=message['from']['id'])
             await message.answer(bm.get_static_message('RemovePhone'), parse_mode=types.ParseMode.HTML)
+        if db.is_admin(message['from']['id']):
+            
+            if message.text.startswith('/enable'):
+                command = message.text
+                if '@' in command:
+                    command = command.split('@')[0]
+                    tgid = command[7:].strip()
+                
+                db.enable_user_subscription(tgid=tgid)
+                await message.answer(bm.get_static_message('Done'), parse_mode=types.ParseMode.HTML)
+            
+            if message.text.startswith('/disable'):
+                command = message.text
+                if '@' in command:
+                    command = command.split('@')[0]
+                    tgid = command[8:].strip()
+                    
+                db.disable_user_subscription(tgid=tgid)
+                await message.answer(bm.get_static_message('Done'), parse_mode=types.ParseMode.HTML)
+            
+            if message.text.startswith('/ban'):
+                command = message.text
+                if '@' in command:
+                    command = command.split('@')[0]
+                    tgid = command[4:].strip()
+                    
+                db.ban_user(tgid=tgid)
+                await message.answer(bm.get_static_message('Done'), parse_mode=types.ParseMode.HTML)
             
         elif message.text.startswith('/subscribe'):    
                 command = message.text
