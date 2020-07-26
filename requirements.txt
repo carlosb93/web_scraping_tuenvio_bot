@@ -1,0 +1,7 @@
+schedule
+sqlalchemy
+aiogram
+stop_words
+urllib3
+pandas
+bs4
