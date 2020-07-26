@@ -5,3 +5,4 @@ MY_ID = 954732565
 REQUEST_KWARGS=''#http://proxy.server:3128'
 DB_FILENAME = 'bot_tuenvio.db'
 DB_LOCATION = 'data'
+WEBHOOK_URL = 'https://web-scraping-tuenvio.herokuapp.com/'

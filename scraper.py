@@ -13,7 +13,14 @@ from stop_words import get_stop_words
 import main as botfrom
 
 
+# http://proxy.server:3128
 
+proxies = { 'http': 'http://proxy.server:3128',
+            'https': 'http://proxy.server:3128'
+                  }
+# headers = { 'http': 'http://proxy.server:3128',
+#             'https': 'http://proxy.server:3128'
+#                   }
 
 logging.basicConfig(format=u'%(filename)s [ LINE:%(lineno)+3s ]#%(levelname)+8s [%(asctime)s]  %(message)s',
                     level=logging.DEBUG)
@@ -27,11 +34,8 @@ def main():
         # print('Grabbing... '+my_url)
         # domain = urlparse(my_url).netloc # domain name
         # print("via domain", domain)
-        proxies = {
-                   'http': 'http://proxy.server:3128',
-                   'https': 'http://proxy.server:3128',
-                  }
-        response = requests.get(uri.code) # go to the url and get it
+        
+        response = requests.get(uri.code, proxies=proxies) # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
         if response.status_code != 200: # not equal, == equal
@@ -99,13 +103,10 @@ def get_to_module(modulo_href=None):
         print("Grabbing...", my_url)
         domain = urlparse(my_url).netloc # domain name
         print("via domain", domain)
-        proxies = {
-                   'http': 'http://proxy.server:3128',
-                   'https': 'http://proxy.server:3128',
-                  }
+
         
 
-        response = requests.get(my_url) # go to the url and get it
+        response = requests.get(my_url, proxies=proxies) # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
         if response.status_code != 200: # not equal, == equal
