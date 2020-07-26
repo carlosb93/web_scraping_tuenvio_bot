@@ -7,7 +7,7 @@ from aiogram.types import ReplyKeyboardRemove, \
     InlineKeyboardMarkup, InlineKeyboardButton
 
 langs = {
-    'English' : {        
+    'Spanish' : {
         'adjustSettings': "Adjust your settings",
         'AllianceCreated': 'Alliance info created!',
         'AllianceUpdated': 'Alliance info updated!',
@@ -41,22 +41,22 @@ langs = {
         'PlayerUpdated': 'Player info updated!',
         'RosterUpdated': 'Guild roster updated!',
         'ReportOK': 'Thanks for sending report',
-        'SettingOverview': "Setting Overview",  
-        'UserNotRegister': "Hello i am a fast alert Bot.\nSend me your cellphone number ☎️ to suscribe to alerts.\n\n /subscribe ########",          
-        'UnknownCWMsg': 'ChatWars Message not recognized!',        
-        'Stock': 'Generating deposit msg!',        
+        'SettingOverview': "Setting Overview",
+        'UserNotRegister': "Hello i am a fast alert Bot.\nSend me your cellphone number ☎️ to suscribe to alerts.\n\n /subscribe ########",
+        'UnknownCWMsg': 'ChatWars Message not recognized!',
+        'Stock': 'Generating deposit msg!',
         'Welcome': "Welcome back",
         'WelcomeAdmin': "Welcome Admin",
-        'WelcomeCommander': "Welcome Commander",      
-        'AddedAlert': "✔️ Alert enabled!!!",      
+        'WelcomeCommander': "Welcome Commander",
+        'AddedAlert': "✔️ Alert enabled!!!",
         'RemoveAlert': "❌ Alert disabled!!!",
         'RemovePhone': "❌ Deleted!!!",
         'Done': "✔️ Done!!!",
-        'Subscribed': "You are now subscribed!!!", 
-        '5ta': "⚠️⚠️ Modulo en 5ta y 42 ⚠️⚠️!!!", 
-        'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Your cellphone number must be 8-10  digits long and no string or symbols!!!"      
+        'Subscribed': "You are now subscribed!!!",
+        '5ta': "⚠️⚠️ Modulo en 5ta y 42 ⚠️⚠️!!!",
+        'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Your cellphone number must be 8-10  digits long and no string or symbols!!!"
     },
-    'Spanish' : {        
+    'English' : {
         'adjustSettings': "Ajusta tus configuraciones",
         'AllianceCreated': 'Información de Alianza creada!',
         'AllianceUpdated': 'Información de Alianza actualizada!',
@@ -90,44 +90,49 @@ langs = {
         'PlayerUpdated': 'Información del jugador Actualizada!',
         'RosterUpdated': 'Lista del gremio actualizada!',
         'ReportOK': 'Gracias por enviar el reporte',
-        'SettingOverview': "Descripción general de la configuración",  
-        'UserNotRegister': "Hola soy un Bot de alerta rapida.\nEnviame tu numero ☎️ para suscribirte a las alertas\n\n /subscribe ########",          
-        'UnknownCWMsg': 'Mensaje de ChatWars no reconocido!',        
-        'Stock': 'Generando mensaje de deposito!',        
+        'SettingOverview': "Descripción general de la configuración",
+        'UserNotRegister': "Hola soy un Bot de alerta rapida.\nEnviame tu numero ☎️ para suscribirte a las alertas\n\n /subscribe ########",
+        'UnknownCWMsg': 'Mensaje de ChatWars no reconocido!',
+        'Stock': 'Generando mensaje de deposito!',
         'Welcome': "Bienvenido de vuelta",
         'WelcomeAdmin': "Bienvenido Admin",
-        'WelcomeCommander': "Bienvenido Commander",      
-        'AddedAlert': "✔️ Alerta habilitada!!!",      
-        'RemoveAlert': "❌ Alerta deshabilitada!!!",      
-        'RemovePhone': "❌ Eliminado!!!",      
-        'Done': "✔️ Hecho!!!",      
+        'WelcomeCommander': "Bienvenido Commander",
+        'AddedAlert': "✔️ Alerta habilitada!!!",
+        'RemoveAlert': "❌ Alerta deshabilitada!!!",
+        'RemovePhone': "❌ Eliminado!!!",
+        'Done': "✔️ Hecho!!!",
         'Subscribed': "Usted esta suscrito!!!",
         '5ta': "⚠️⚠️ Modulo en 5ta y 42 ⚠️⚠️!!!",
-        'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Su numero debe ser de 8-10 digitos y sin caracteres o simbolos!!!"       
+        'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Su numero debe ser de 8-10 digitos y sin caracteres o simbolos!!!"
     }
 }
-def days_between(d1, d2):
-    timeStampObj = (d1 - d2)
-    
+def days_between(max, min):
+    min = min/1000           #removing milli seconds
+    max = max/1000
+
+    min = datetime.datetime.fromtimestamp(min)
+    max = datetime.datetime.fromtimestamp(max)
+
+    timeStampObj = (max-min).days
+
     return timeStampObj
 
-def get_all_users_admin():
+def get_all_users_admin(test=None):
     res = "👥 Listado de Usuarios: \n\n"
     users = db.get_all_users()
     if users:
         for u in users:
             pagado = days_between(time.time() ,u.pay_date)
-            pagado = datetime.datetime.fromtimestamp(pagado).days
-            if pagado > 30: 
-                db.disable_user_subscription()
-                res += '- {} /ban {} /enable {}\n'.format(u.name, u.tgid, u.tgid)
+            if pagado > 30:
+                db.disable_user_subscription(tgid=u.tgid)
+                res += '- {} | @{} |{}\n /ban /enable_{}\n'.format(u.name, u.arroba, u.phone, u.tgid)
             else:
                 if u.pay:
-                    res += '- {} /ban {} /disable {}\n'.format(u.name, u.tgid, u.tgid)
+                    res += '- {} | @{} |{}\n /ban /disable_{}\n'.format(u.name, u.arroba, u.phone, u.tgid)
                 else:
-                    res += '- {} /ban {} /enable {}\n'.format(u.name, u.tgid, u.tgid)
+                    res += '- {} | @{} |{} \n /ban /enable_{}\n'.format(u.name, u.arroba, u.phone, u.tgid)
     return res
-    
+
 def get_user_alert_status_prod(tgid=None):
     res = "🔊 Estas son sus alertas activas:\n\n"
     # Settings4User todos los settings activos por el usuario
@@ -144,7 +149,7 @@ def get_user_alert_status_prod(tgid=None):
         res += '----No tiene alertas activas---- \n\n'
         res += 'Seleccione sobre que desea ser notificado. \n'
         return res
-    
+
 def get_user_alert_status_url(tgid=None):
     res = "🔊 Estas son sus alertas activas:\n\n"
     # Settings4User todos los settings activos por el usuario
@@ -162,14 +167,14 @@ def get_user_alert_status_url(tgid=None):
         res += 'Seleccione sobre que desea ser notificado. \n'
         return res
 
-    
+
 def get_alert_options_btn_url(tgid=None):
     settings_user = db.get_user_alerts(uid=tgid)
+    btn = InlineKeyboardMarkup(row_width=2)
     if settings_user:
-        btn = InlineKeyboardMarkup(row_width=2)
         for sets_u in settings_user:
             settings = db.get_setting_alert(settings_user=sets_u, kind='url')
-            
+
             if settings:
                 for sets in settings:
                     if sets.name == sets_u.setting_id:
@@ -187,16 +192,17 @@ def get_alert_options_btn_url(tgid=None):
         if settings:
             for sets in settings:
                 btn.insert(InlineKeyboardButton("✅ "+sets.name, callback_data=sets.name))
-                
-    
-    return btn       
+
+
+    return btn
+
 def get_alert_options_btn_prod(tgid=None):
     settings_user = db.get_user_alerts(uid=tgid)
     btn = InlineKeyboardMarkup(row_width=2)
     if settings_user:
         for sets_u in settings_user:
             settings = db.get_setting_alert(settings_user=sets_u, kind='alert')
-            
+
             if settings:
                 for sets in settings:
                     if sets.name == sets_u.setting_id:
@@ -214,25 +220,20 @@ def get_alert_options_btn_prod(tgid=None):
         if settings:
             for sets in settings:
                 btn.insert(InlineKeyboardButton("✅ "+sets.name, callback_data=sets.name))
-    
-    return btn       
-        
-    
 
-                    
-            # for sets,sets_u in [(sets,sets_u) for sets in settings for sets_u in settings_user]:
- 
-    
+    return btn
+
+
 
 def get_help():
     res = '<code> creador:</code>  @mr_charlie93 \n\n'
-    res += '<b>comandos utiles:</b> <code>/help, </code>'
+    res += '<b>comandos utiles:</b>\n <code>/help, /removeme, /back </code>'
     return res
 
 
 def get_static_message(message_key, ulang='English'):
     if not ulang in langs.keys():
-        ulang = 'Spanish'
+        ulang = 'English'
     if message_key in langs[ulang].keys():
         return langs[ulang][message_key]
     return message_key

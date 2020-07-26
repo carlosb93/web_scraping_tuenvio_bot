@@ -10,7 +10,7 @@ import db_handler as db
 from urllib.parse import urlparse
 from collections import Counter
 from stop_words import get_stop_words
-import bot as botfrom
+import main as botfrom
 
 
 

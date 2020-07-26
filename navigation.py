@@ -2,7 +2,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import  types
 from config import ADMIN_ID
 from aiogram.utils.callback_data import CallbackData
-from db_handler import is_admin
+import db_handler as db
 
 class Navigation(StatesGroup):
     main = State()  # Will be represented in storage as 'Navigation:main'
@@ -15,19 +15,18 @@ def load_main(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
     markup.add("🔊 Elegir Productos 📦", "🔊 Elegir Tiendas 🛒")
     markup.add("⚙️ Settings")
-    if is_admin(message['from']['id']):
+    if db.is_admin(message['from']['id']):
         markup.add("🔰 Admin")
     return markup  
 
 def load_settings(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-    markup.add("🔙 Atras")
+    markup.add("🔙Go Back")
     return markup  
  
 def load_admin(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-    markup.add("👥 Users")
-    markup.add("🔙 Atras")
+    markup.add("👥Users", "🔙Go Back")
     return markup   
 
 

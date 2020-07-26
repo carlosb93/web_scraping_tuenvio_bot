@@ -44,8 +44,11 @@ else:
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
+broadcast_target = {}
+
 async def process_main(message: types.Message):
     if db.is_registered(message['from']['id']):
+        
         if message.text == "🔊 Elegir Productos 📦":
             u = db.get_user(uid=message['from']['id'])
             rply = bm.get_user_alert_status_prod(u.tgid)
@@ -59,21 +62,38 @@ async def process_main(message: types.Message):
             await message.answer(text=rply, disable_notification=False,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)
 
         elif message.text == "⚙️ Settings":
-            await go_to('settings', message, bm.get_settings_menu(message))
-            
-        elif message.text == "🔙 Atras":
-            await go_to('main', message, '..')
+            rply = bm.get_settings_menu(message)
+            await message.answer(text=rply, parse_mode=types.ParseMode.HTML)
 
         elif message.text == "🔰 Admin" and db.is_admin(message['from']['id']):
-            await go_to('admin', message, bm.get_static_message('WelcomeAdmin'))
-            
-        elif message.text == "👥 Users" and db.is_admin(message['from']['id']):
-            rply = bm.get_all_users_admin()
-            await message.answer(text=rply, parse_mode=types.ParseMode.HTML)
-            
+            await go_to('admin', message, bm.get_static_message('WelcomeAdmin'))    
     else:
         db.create_user(name=message['from']['first_name'],lang=message['from']['language_code'],arroba=message['from']['username'],tgid=message['from']['id'])
         await message.reply(bm.get_static_message('UserNotRegister'))
+        
+async def process_settings(message: types.Message):
+    if db.is_registered(message['from']['id']):
+            
+        if message.text == "🔙Go Back":
+            broadcast_target[message['from']['id']] = []
+            await go_to('main', message, '..')
+
+        # elif message.text == "👥Users" and db.is_admin(message['from']['id']):
+        #     await message.answer(text=bm.get_all_users_admin(), parse_mode=types.ParseMode.HTML)     
+    else:
+        await message.reply(bm.get_static_message('NoPriviledges'))
+        
+async def process_admin(message: types.Message):
+    if db.is_admin(message['from']['id']):
+            
+        if message.text == "🔙Go Back":
+            broadcast_target[message['from']['id']] = []
+            await go_to('main', message, '..')
+
+        elif message.text == "👥Users" and db.is_admin(message['from']['id']):
+            await message.answer(text=bm.get_all_users_admin(), parse_mode=types.ParseMode.HTML)     
+    else:
+        await message.reply(bm.get_static_message('NoPriviledges'))
         
 #commands
 async def general_commands(message: types.Message):
@@ -87,32 +107,42 @@ async def general_commands(message: types.Message):
             await message.answer(bm.get_static_message('RemovePhone'), parse_mode=types.ParseMode.HTML)
         if db.is_admin(message['from']['id']):
             
-            if message.text.startswith('/enable'):
-                command = message.text
-                if '@' in command:
-                    command = command.split('@')[0]
-                    tgid = command[7:].strip()
-                
-                db.enable_user_subscription(tgid=tgid)
-                await message.answer(bm.get_static_message('Done'), parse_mode=types.ParseMode.HTML)
-            
-            if message.text.startswith('/disable'):
+            if message.text.startswith('/enable_'):
                 command = message.text
                 if '@' in command:
                     command = command.split('@')[0]
                     tgid = command[8:].strip()
+                else:
+                    tgid = command[8:].strip()
+                
+                db.enable_user_subscription(tgid=tgid)
+                await message.answer(bm.get_static_message('Done'), parse_mode=types.ParseMode.HTML)
+            
+            if message.text.startswith('/disable_'):
+                command = message.text
+                if '@' in command:
+                    command = command.split('@')[0]
+                    tgid = command[9:].strip()
+                else:
+                    tgid = command[9:].strip()
                     
                 db.disable_user_subscription(tgid=tgid)
                 await message.answer(bm.get_static_message('Done'), parse_mode=types.ParseMode.HTML)
             
-            if message.text.startswith('/ban'):
+            if message.text.startswith('/ban_'):
                 command = message.text
                 if '@' in command:
                     command = command.split('@')[0]
-                    tgid = command[4:].strip()
+                    tgid = command[5:].strip()
+                else:
+                    tgid = command[5:].strip()
                     
-                db.ban_user(tgid=tgid)
-                await message.answer(bm.get_static_message('Done'), parse_mode=types.ParseMode.HTML)
+            if message.text.startswith('/back'):
+                await go_to('main', message, '..')
+                 
+            if message.text.startswith('/users'):
+                rply = bm.get_all_users_admin()
+                await message.answer(text=rply, parse_mode=types.ParseMode.HTML)  
             
         elif message.text.startswith('/subscribe'):    
                 command = message.text
@@ -173,8 +203,10 @@ async def router(message: types.Message, state: FSMContext):
             await process_main(message)
         elif current_state == Navigation.main.state:
             await process_main(message)
-        # elif current_state == Navigation.settings.state:
-            # await process_settings(message)
+        elif current_state == Navigation.settings.state:
+            await process_settings(message)
+        elif current_state == Navigation.admin.state:
+            await process_admin(message)
 
 # exitFlag = 0
  

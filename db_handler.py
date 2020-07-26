@@ -148,7 +148,6 @@ def get_user(uid=None, name=None):
         
 def get_all_users():
     user = s.query(User)
-    
     if user:
         try:
             return user.all()
