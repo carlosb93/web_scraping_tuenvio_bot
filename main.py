@@ -1,22 +1,27 @@
-import asyncio
-import logging
-import schedule
-# import scraper
-import threading
 import time
+import logging
+import asyncio
+import requests
+import threading
+import pandas as pd
+import aioschedule as schedule
+
+import db_handler as db
+import bot_message as bm
+
+from bs4 import BeautifulSoup
 from datetime import datetime
+from urllib.parse import urlparse
 
 from navigation import Navigation, go_to
 from config import TOKEN, REQUEST_KWARGS
-import db_handler as db
-import bot_message as bm
 
 from aiogram import Bot, types
 from aiogram.utils import executor
 from aiogram.utils.emoji import emojize
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher import Dispatcher, FSMContext
 from aiogram.types.message import ContentType
+from aiogram.dispatcher import Dispatcher, FSMContext
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.utils.markdown import text, bold, italic, code, pre
 from aiogram.types import ParseMode, InputMediaPhoto, InputMediaVideo, ChatActions
 
@@ -31,6 +36,10 @@ schedthread = threading.Thread(target=schedule_run_pending)
 schedthread.start()
 
 
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36'}
+proxies = { 'http': 'http://proxy.server:3128',
+            'https': 'http://proxy.server:3128'
+                  }
 
 logging.basicConfig(format=u'%(filename)s [ LINE:%(lineno)+3s ]#%(levelname)+8s [%(asctime)s]  %(message)s',
                     level=logging.INFO)
@@ -40,6 +49,7 @@ if REQUEST_KWARGS == '':
     bot = Bot(token=TOKEN)
 else:
     bot = Bot(token=TOKEN, proxy=REQUEST_KWARGS)
+    
     
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
@@ -155,6 +165,13 @@ async def general_commands(message: types.Message):
                     db.update_user_phone(phone=phone,tgid=message['from']['id'])            
                     await message.answer(bm.get_static_message('Subscribed'),parse_mode=types.ParseMode.HTML)
                     
+async def alerta_start_scraping():
+    users = db.get_all_users()
+    for u in users:
+        if db.is_admin(u.tgid):
+            await bot.send_message(u.tgid, bm.get_static_message('start_scrap'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+    
+            
 async def alerta_basica():
     page_url = 'https://5tay42.enzona.net/nuevos-productos'
     title = '5ta'
@@ -169,12 +186,15 @@ async def alerta_basica():
             users = db.get_all_users()
             for u in users:
                 await bot.send_message(u.tgid, bm.get_static_message('5ta'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+            
         # await broadcaster(bm.get_static_message('5ta'), broadcast_target[u.tgid], log, bot)
     else:
         db.set_modulo(page_url=page_url,title=title)
         users = db.get_all_users()
         for u in users:
             await bot.send_message(u.tgid, bm.get_static_message('5ta'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+    return 'fin'
+        
         
 async def alerta_basica_prevent(url=None,price=None,title=None):
     users = db.get_all_users()
@@ -195,12 +215,14 @@ async def alerta_basica_prevent(url=None,price=None,title=None):
             db.set_modulo(page_url=page_url,title=title)
             for u in users:
                 await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+            
                 # await broadcaster(bm.get_static_message('5ta'), broadcast_target[u.tgid], log, bot)
     else:
-        db.set_modulo(page_url=page_url,title=title)
+        db.add_modulo(page_url=page_url,title=title)
         users = db.get_all_users()
         for u in users:
             await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+        
         
     
 async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
@@ -238,9 +260,10 @@ async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
                                             await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
                 else:
                     await bot.send_message(u.tgid, bm.get_static_message('Conf_alerts'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+              
     else:
         #notifico
-        db.set_modulo(page_url=page_url,title=title)
+        db.add_modulo(page_url=page_url,title=title)
         users = db.get_all_users()
         formated = '⚠️⚠️⚠️ Alerta Tu envio ⚠️⚠️⚠️\n'
         for u in users:
@@ -267,7 +290,8 @@ async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
                                         await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
             else:
                 await bot.send_message(u.tgid, bm.get_static_message('Conf_alerts'), disable_notification=True, parse_mode=types.ParseMode.HTML)
-       
+        
+        return True
             
             
 
@@ -322,26 +346,158 @@ async def router(message: types.Message, state: FSMContext):
         elif current_state == Navigation.admin.state:
             await process_admin(message)
 
-# exitFlag = 0
- 
-# class myThread(threading.Thread):
-#     def __init__(self, threadID, name, counter):
-#         threading.Thread.__init__(self)
-#         self.threadID =threadID
-#         self.name = name
-#         self.counter = counter
-#     def run(self):
-#         print("Starting " + self.name)
-#         # function
-#         scraper.start_gain_url()
-#         print("Exiting " + self.name)
+
+
+
+
+
+    
+async def start_scratching():
+    await alerta_start_scraping()
+    
+    page_url = db.get_url()
+   
+    for uri in page_url:
+        print(uri.code)
+        response = requests.get(uri.code,headers=headers) # go to the url and get it
+        print("Status is", response.status_code) # 200, 403, 404, 500, 503
+
+        if response.status_code != 200: # not equal, == equal
+            print("You can't scrape this", response.status_code)
+        
+        else:
+            print("Scraping..", uri.code)
+                
+            content = response.content
+            # content = browser.page_source
+            soup = BeautifulSoup(content, 'html.parser')
+            if soup:
+    
+                if 'https://5tay42.enzona.net/nuevos-productos' == uri.code:
+                        div = soup.find('div', attrs={'class':'center_column col-xs-12 col-sm-9'})
+                        if div:
+                            tag_warning = div.find('p', attrs={'class':'alert alert-warning'})
+                            if tag_warning:
+                                print('5ta vacio')
+                                time.sleep(4)
+                            else:
+                                print('5ta alerta')
+                                await alerta_basica()
+            
+                    # get_modulos_href_5ta(soup=soup,page_url=uri.code)
+                    # sleep(5)
+                else:
+                    a = soup.find_all('a', href=True,attrs={'class':'invarseColor'})
+                    if a:
+                        for href in a:
+                            if 'MÓDULOS' in href.text or 'Modulos' in href.text or 'Combos de productos' in href.text:
+                                href = href.get('href')
+                                url = uri.code.split('Products')[0]
+                                url+= href
+                                print('----------Accediendo a modulo en tu envio con ruta---------')
+                                print(url)
+                                await get_modulos_href(page_url=url)
+                            else:
+                                pass
+                    
+        pass
+
+
+async def get_modulos_href(page_url=None):
+    # modulo parser
+    response = requests.get(page_url,headers=headers) # go to the url and get it
+    print("Status is", response.status_code) # 200, 403, 404, 500, 503
+
+    if response.status_code != 200: # not equal, == equal
+        print("You can't scrape this", response.status_code)  
+    else:
+        print("Scraping..", page_url)
+                
+        content = response.content
+        # content = browser.page_source
+        soup = BeautifulSoup(content, 'html.parser')
+        if soup:
+            listado = soup.find('ul',attrs={'class':'hProductItems clearfix'})
+            if listado:
+                items = listado.find_all('li',attrs={'class':'span3 clearfix'})
+                if items:
+                    for item in items:
+                        a = item.find('a',href=True,attrs={'class':'invarseColor'})
+                        # title = a.text       # titulo del modulo
+                        href = a.get('href')
+                        url = page_url.split('Products')[0]
+                        url+= href
+                        await get_modulos_content(url)
+                
+                        
+async def get_modulos_content(page_url=None):
+    # modulo parser
+    response = requests.get(page_url,headers=headers) # go to the url and get it
+    print("Status is", response.status_code) # 200, 403, 404, 500, 503
+
+    if response.status_code != 200: # not equal, == equal
+        print("You can't scrape this", response.status_code)  
+    else:
+        print("Scraping..", page_url)
+                
+        content = response.content
+        # content = browser.page_source
+        soup = BeautifulSoup(content, 'html.parser')
+        if soup:
+            title = soup.find('div',attrs={'class':'product-title'})
+            print(title)
+            if title:
+                title = title.find('h4')
+                print(title)
+                product_set = soup.find('div',attrs={'class':'product-set'})
+                if product_set:
+                    price = product_set.find('div',attrs={'class':'product-price'})
+                    price = price.find('span').text
+                
+                product_desc = soup.find('div',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_pnlKitItems'})
+                if product_desc:
+                    table = soup.find('table',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_gridKitItems'})
+                    elements = table.find_all('td',attrs={'class':'desc'})
+                    if elements:
+                        prod_list ='Productos:\n'
+                        for element in elements:
+                            prod = element.find('a',href=True,attrs={'target':'_blank'})
+                            prod_list += '- {}\n'.format(prod.text) 
+                        print(prod_list)
+                        await alerta_tu_envio(page_url,title,price,prod_list)
+            else:
+                print('alerta temprana')
+                title = soup.find('td',attrs={'class':'DescriptionValue'})
+                if title:
+                    title = title.find('span').text
+                    price = soup.find('td',attrs={'class':'PrecioProdList'})
+                    if price:
+                        price = price.text
+                        print('excecute alerta temprana')
+                        await alerta_basica_prevent(url=page_url,price=price,title=title)
+                
+                        
+
+async def get_modulos_href_5ta(soup=None, page_url=None):
+    # modulo parser
+    div = soup.find('div', attrs={'class':'center_column col-xs-12 col-sm-9'})
+    if div:
+        tag_warning = div.find('p', attrs={'class':'alert alert-warning'})
+        if tag_warning:
+            print('5ta vacio')
+            await alerta_basica()
+            time.sleep(4)
+        else:
+            await alerta_basica()
         
 
-def schedule_all_taskts():
-    pass
-    # thread1 = myThread(1,"Thread-1", 1)
-    # schedule.every(3).minutes.do(asyncio.run_coroutine_threadsafe, thread1.start(),bot.loop)
+async def schedule_all_taskts():
+    schedule.every(1).minutes.do(start_scratching)
+    while True:
+        await schedule.run_pending()
+        await asyncio.sleep(2)
     
 
 if __name__ == '__main__':
+    dp.loop.create_task(schedule_all_taskts())
     executor.start_polling(dp)

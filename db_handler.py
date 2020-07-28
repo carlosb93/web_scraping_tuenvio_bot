@@ -92,20 +92,25 @@ def enable_conf_user(tgid=None, name=None): # ✔️
 
 #modulos
 def set_modulo(page_url=None,title=None):
-    module = s.query(Modulos).filter(Modulos.name == title).one()
+    module = s.query(Modulos)
     if module:
-        #update
-        module.name = title
-        module.url = page_url
-        module.created_at = time.time()
-        s.add(module)
-        s.commit()
-    else:
-        # add
-        s.add(Modulos(name=title,url=page_url, created_at=time.time()))
-        s.commit()
+        try:
+            module = module.filter(Modulos.name == title)
+            module = module.one()
+            
+            module.name = title
+            module.url = page_url
+            module.created_at = time.time()
+            s.add(module)
+            s.commit()
+        except sqlalchemy.orm.exc.NoResultFound:
+            pass
+            
         
-    return 'Module Updated'
+def add_modulo(page_url=None,title=None):
+    s.add(Modulos(name=title,url=page_url, created_at=time.time()))
+    s.commit()
+    
 
 def get_modulo(title=None):
     module = s.query(Modulos).filter(Modulos.name == title)
