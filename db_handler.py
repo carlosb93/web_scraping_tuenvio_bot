@@ -375,10 +375,11 @@ def add_or_update_user(name, lang=None, class_list=None, level=None, attack=None
 ###########################################
 
 def init_res():
+    qry = open(os.path.join(DB_LOCATION, 'settings.sql'),'r').read()
+    conn = sqlite3.connect(os.path.join(DB_LOCATION, DB_FILENAME) )
+    c = conn.cursor()
     try:
-        qry = open(os.path.join(DB_LOCATION, 'settings.sql'),'r').read()
-        conn = sqlite3.connect(os.path.join(DB_LOCATION, DB_FILENAME) )
-        c = conn.cursor()
+       
         c.executescript(qry)
         conn.commit()
     except:
