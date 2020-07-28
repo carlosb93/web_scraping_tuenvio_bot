@@ -41,12 +41,12 @@ INSERT INTO "settings" VALUES (8, 'Shampoo', 'shampoo', 'alert');
 INSERT INTO "settings" VALUES (9, 'Acondicionador', 'aconditioner', 'alert');
 INSERT INTO "settings" VALUES (10, 'Aceite', 'oil', 'alert');
 INSERT INTO "settings" VALUES (11, '5ta y 42', 'https://5tay42.enzona.net/nuevos-productos', 'url');
-INSERT INTO "settings" VALUES (12, 'Carlos 3ro', 'https://www.tuenvio.cu/carlos3', 'url');
-INSERT INTO "settings" VALUES (13, 'Cuatro Caminos', 'https://www.tuenvio.cu/4caminos', 'url');
-INSERT INTO "settings" VALUES (14, 'Tipica de Boyeros', 'https://www.tuenvio.cu/tipicaboyeros', 'url');
-INSERT INTO "settings" VALUES (15, 'Villa Diana', 'https://www.tuenvio.cu/caribehabana', 'url');
-INSERT INTO "settings" VALUES (16, 'El Pedregal', 'https://www.tuenvio.cu/tvpedregal', 'url');
-INSERT INTO "settings" VALUES (17, 'Artemisa', 'https://www.tuenvio.cu/artemisa', 'url');
+INSERT INTO "settings" VALUES (12, 'Carlos 3ro', 'https://www.tuenvio.cu/carlos3/Products?depPid=0', 'url');
+INSERT INTO "settings" VALUES (13, 'Cuatro Caminos', 'https://www.tuenvio.cu/4caminos/Products?depPid=0', 'url');
+INSERT INTO "settings" VALUES (14, 'Tipica de Boyeros', 'https://www.tuenvio.cu/tipicaboyeros/Products?depPid=0', 'url');
+INSERT INTO "settings" VALUES (15, 'Villa Diana', 'https://www.tuenvio.cu/caribehabana/Products?depPid=0', 'url');
+INSERT INTO "settings" VALUES (16, 'El Pedregal', 'https://www.tuenvio.cu/tvpedregal/Products?depPid=0', 'url');
+INSERT INTO "settings" VALUES (17, 'Artemisa', 'https://www.tuenvio.cu/artemisa/Products?depPid=0', 'url');
 INSERT INTO "settings" VALUES (18, 'Picadillo', 'picadillo', 'alert');
 
 PRAGMA foreign_keys = true;

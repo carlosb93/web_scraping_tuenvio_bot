@@ -161,6 +161,16 @@ async def alerta_basica():
         await bot.send_message(u.tgid, bm.get_static_message('5ta'), disable_notification=True, parse_mode=types.ParseMode.HTML)
         # await broadcaster(bm.get_static_message('5ta'), broadcast_target[u.tgid], log, bot)
     
+async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
+    users = db.get_all_users()
+    formated = '⚠️⚠️⚠️ Alerta Tu envio ⚠️⚠️⚠️\n'
+    for u in users:
+        formated += '{}\n'.format(title)
+        formated += '<b>Precio: {}</b>\n\n'.format(price)
+        formated += '{}'.format(prod_list)
+        formated += '\n<a href="{}">Ver modulo...</a>'.format(page_url)
+        await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+    
 
 @dp.callback_query_handler(state='*')
 async def process_callback_button(callback_query: types.CallbackQuery):
@@ -230,5 +240,4 @@ def schedule_all_taskts():
     
 
 if __name__ == '__main__':
-    schedule_all_taskts()
     executor.start_polling(dp)
