@@ -18,9 +18,7 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 proxies = { 'http': 'http://proxy.server:3128',
             'https': 'http://proxy.server:3128'
                   }
-# headers = { 'http': 'http://proxy.server:3128',
-#             'https': 'http://proxy.server:3128'
-#                   }
+
 
 logging.basicConfig(format=u'%(filename)s [ LINE:%(lineno)+3s ]#%(levelname)+8s [%(asctime)s]  %(message)s',
                     level=logging.DEBUG)
@@ -30,10 +28,6 @@ def main():
     page_url = db.get_url()
    
     for uri in page_url:
-        # my_url = input(uri.code)
-        # print('Grabbing... '+my_url)
-        # domain = urlparse(my_url).netloc # domain name
-        # print("via domain", domain)
         print(uri.code)
         response = requests.get(uri.code,headers=headers) # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
@@ -67,7 +61,7 @@ def main():
                     a = soup.find_all('a', href=True,attrs={'class':'invarseColor'})
                     if a:
                         for href in a:
-                            if 'MÓDULOS' in href.text or 'Modulos' in href.text:
+                            if 'MÓDULOS' in href.text or 'Modulos' in href.text or 'Combos de productos' in href.text:
                                 href = href.get('href')
                                 url = uri.code.split('Products')[0]
                                 url+= href
@@ -122,38 +116,45 @@ def get_modulos_content(page_url=None):
         soup = BeautifulSoup(content, 'html.parser')
         if soup:
             title = soup.find('div',attrs={'class':'product-title'})
-            title = title.find('h4').text
-            
-            product_set = soup.find('div',attrs={'class':'product-set'})
-            if product_set:
-                price = product_set.find('div',attrs={'class':'product-price'})
-                price = price.find('span').text
+            print(title)
+            if title:
+                title = title.find('h4')
+                print(title)
+                product_set = soup.find('div',attrs={'class':'product-set'})
+                if product_set:
+                    price = product_set.find('div',attrs={'class':'product-price'})
+                    price = price.find('span').text
                 
-            product_desc = soup.find('div',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_pnlKitItems'})
-            if product_desc:
-                table = soup.find('table',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_gridKitItems'})
-                elements = table.find_all('td',attrs={'class':'desc'})
-                if elements:
-                    prod_list ='Productos:\n'
-                    for element in elements:
-                        prod = element.find('a',href=True,attrs={'target':'_blank'})
-                        prod_list += '- {}\n'.format(prod.text) 
-                    print(prod_list)
-                    loop = asyncio.get_event_loop()
-                    # page_url ='https://www.tuenvio.cu/carlos3/Item?ProdPid=914122&depPid=46095&page=0'
-                    # title ='Kit de Alimentos No.24'
-                    # price ='10.85 CUC'
-                    # prod_list ='1 L-Aceite de soya\n425 g-Sardinas en tomate\n2 kg- Muslo de pollo'
-                    
-                    loop.run_until_complete(botfrom.alerta_tu_envio(page_url,title,price,prod_list))
-                    
-        
-            
+                product_desc = soup.find('div',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_pnlKitItems'})
+                if product_desc:
+                    table = soup.find('table',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_gridKitItems'})
+                    elements = table.find_all('td',attrs={'class':'desc'})
+                    if elements:
+                        prod_list ='Productos:\n'
+                        for element in elements:
+                            prod = element.find('a',href=True,attrs={'target':'_blank'})
+                            prod_list += '- {}\n'.format(prod.text) 
+                        print(prod_list)
+                        loop = asyncio.get_event_loop()
+                        # page_url ='https://www.tuenvio.cu/carlos3/Item?ProdPid=914122&depPid=46095&page=0'
+                        # title ='Kit de Alimentos No.24'
+                        # price ='10.85 CUC'
+                        # prod_list ='1 L-Aceite de soya\n425 g-Sardinas en tomate\n2 kg- Muslo de pollo'
                         
+                        loop.run_until_complete(botfrom.alerta_tu_envio(page_url,title,price,prod_list))
+            else:
+                print('alerta temprana')
+                title = soup.find('td',attrs={'class':'DescriptionValue'})
+                if title:
+                    title = title.find('span').text
+                    price = soup.find('td',attrs={'class':'PrecioProdList'})
+                    if price:
+                        price = price.text
+                        print('excecute alerta temprana')
+                        loop = asyncio.get_event_loop()
+                        loop.run_until_complete(botfrom.alerta_basica_prevent(url=page_url,price=price,title=title))
                 
                         
-                        
-    
 
 def get_modulos_href_5ta(soup=None, page_url=None):
     # modulo parser
@@ -173,78 +174,12 @@ def get_modulos_href_5ta(soup=None, page_url=None):
             # urlconcat = str(page_url)+'/'+str(tag_a)
             # get_to_module(urlconcat)
 
-      
-
-def get_to_module(modulo_href=None):
-    try:
-        
-        my_url = input(modulo_href) 
-
-        print("Grabbing...", my_url)
-        domain = urlparse(my_url).netloc # domain name
-        print("via domain", domain)
-
-        
-
-        response = requests.get(my_url, proxies=proxies) # go to the url and get it
-        print("Status is", response.status_code) # 200, 403, 404, 500, 503
-
-        if response.status_code != 200: # not equal, == equal
-            print("You can't scrape this", response.status_code)
-        else:
-            print("Scraping..")
-            content = response.content
-            soup = BeautifulSoup(content, 'html.parser')
-            if soup:
-                print('start')
-    except requests.exceptions.ConnectionError:
-        requests.status_code = "Connection refused"
-        sleep(4)
 
 
 
 
-def parse_module_content(modulo_href=None):
 
-    classes={
-        'product-price',
-        'product-rate',
-        'product-info'
-    }
-
-    response = requests.get(modulo_href)
-    if response.status_code != 200: # not equal, == equal
-        print("You can't scrape this", response.status_code)
-    else:
-        print("Scraping..")
-        content = response.content
-        soup = BeautifulSoup(content, 'html.parser')
-        if soup:
-            for c in classes:
-               python_jobs = soup.find_all('div',attrs={'class':c})
-               if python_jobs:
-                    if 'price' in c:  #price analisis
-                        for p_job in python_jobs:
-                            precio = p_job.find('dd').get_text()
-                            print('precio:'+ precio)
-    
-                    elif 'rate' in c:  #ratings
-                        for p_job in python_jobs:
-                            rate = p_job.find('dd').get_text()
-                            print('rate:'+rate)
-    
-                    elif 'info' in c:  #information
-                        for p_job in python_jobs:
-                            info = p_job.find('dd').get_text()
-                            print('info:'+info)
-    
-                    else:
-                        print('fin')
-
-        else:
-            pass
-
-schedule.every(1).minutes.do(main)
+schedule.every(20).seconds.do(main)
 
 while True:    
     schedule.run_pending()

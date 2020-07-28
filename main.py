@@ -156,10 +156,52 @@ async def general_commands(message: types.Message):
                     await message.answer(bm.get_static_message('Subscribed'),parse_mode=types.ParseMode.HTML)
                     
 async def alerta_basica():
-    users = db.get_all_users()
-    for u in users:
-        await bot.send_message(u.tgid, bm.get_static_message('5ta'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+    page_url = 'https://5tay42.enzona.net/nuevos-productos'
+    title = '5ta'
+    module = db.get_modulo(title=title)
+    if module:
+        min = datetime.datetime.fromtimestamp(module.created_at/1000)
+        max = datetime.datetime.fromtimestamp(time.time()/1000)
+        created = (max-min).total_seconds() / 60
+        if created > 10:
+    
+            db.set_modulo(page_url=page_url,title=title)
+            users = db.get_all_users()
+            for u in users:
+                await bot.send_message(u.tgid, bm.get_static_message('5ta'), disable_notification=True, parse_mode=types.ParseMode.HTML)
         # await broadcaster(bm.get_static_message('5ta'), broadcast_target[u.tgid], log, bot)
+    else:
+        db.set_modulo(page_url=page_url,title=title)
+        users = db.get_all_users()
+        for u in users:
+            await bot.send_message(u.tgid, bm.get_static_message('5ta'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+        
+async def alerta_basica_prevent(url=None,price=None,title=None):
+    users = db.get_all_users()
+    formated = '⚠️⚠️ Modulo Unknown⚠️⚠️!!!\n'
+    formated += '\n{}'.format(title)
+    formated += '\nPrecio: {}'.format(price)
+    formated += '\n<a href="{}">Ver modulo...</a>'.format(url)
+    
+    page_url = url
+    title = title
+    
+    module = db.get_modulo(title=title)
+    if module:
+        min = datetime.datetime.fromtimestamp(module.created_at/1000)
+        max = datetime.datetime.fromtimestamp(time.time()/1000)
+        created = (max-min).total_seconds() / 60
+        if created > 10:
+            db.set_modulo(page_url=page_url,title=title)
+            for u in users:
+                await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                # await broadcaster(bm.get_static_message('5ta'), broadcast_target[u.tgid], log, bot)
+    else:
+        db.set_modulo(page_url=page_url,title=title)
+        users = db.get_all_users()
+        for u in users:
+            await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+        
     
 async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
     module = db.get_modulo(title=title)
