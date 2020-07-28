@@ -1,7 +1,7 @@
 schedule
 sqlalchemy
 aiogram
-stop_words
+stop-words
 urllib3
 pandas
-bs4
+beautifulsoup4
