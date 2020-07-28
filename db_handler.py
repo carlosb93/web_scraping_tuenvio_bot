@@ -89,12 +89,41 @@ def enable_conf_user(tgid=None, name=None): # ✔️
     setting = s.query(Settings).filter(Settings.name == name).one()
     if setting:
         add_user_alert(tgid,name)
+
+#modulos
+def set_modulo(page_url=None,title=None):
+    module = s.query(Modulos).filter(Modulos.name == title).one()
+    if module:
+        #update
+        module.name = title
+        module.url = page_url
+        module.created_at = time.time()
+        s.add(module)
+        s.commit()
+    else:
+        # add
+        s.add(Modulos(name=title,url=page_url, created_at=time.time()))
+        s.commit()
         
+    return 'Module Updated'
+
+def get_modulo(title=None):
+    module = s.query(Modulos).filter(Modulos.name == title)
+    if module:
+        try:
+            return module.one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            pass
+
+
+ 
 # User
 def create_user(name=None,lang=None, arroba=None, tgid=None):
     s.add(User(name=name,lang=lang, arroba=arroba, tgid=tgid, pay=True, pay_date=time.time()))
     s.commit()
     return 'New User Created'
+
+
 
 def update_user_phone(phone=None, tgid=None):
     user = s.query(User)

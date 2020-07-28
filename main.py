@@ -162,15 +162,77 @@ async def alerta_basica():
         # await broadcaster(bm.get_static_message('5ta'), broadcast_target[u.tgid], log, bot)
     
 async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
-    users = db.get_all_users()
-    formated = '⚠️⚠️⚠️ Alerta Tu envio ⚠️⚠️⚠️\n'
-    for u in users:
-        formated += '{}\n'.format(title)
-        formated += '<b>Precio: {}</b>\n\n'.format(price)
-        formated += '{}'.format(prod_list)
-        formated += '\n<a href="{}">Ver modulo...</a>'.format(page_url)
-        await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
-    
+    module = db.get_modulo(title=title)
+    if module:
+        min = datetime.datetime.fromtimestamp(module.created_at/1000)
+        max = datetime.datetime.fromtimestamp(time.time()/1000)
+        created = (max-min).total_seconds() / 60
+        if created > 10:
+            # update alert y notifico
+            db.set_modulo(page_url=page_url,title=title)
+            users = db.get_all_users()
+            formated = '⚠️⚠️⚠️ Alerta Tu envio ⚠️⚠️⚠️\n'
+            for u in users:
+                formated += '{}\n'.format(title)
+                formated += '<b>Precio: {}</b>\n\n'.format(price)
+                formated += '{}'.format(prod_list)
+                formated += '\n<a href="{}">Ver modulo...</a>'.format(page_url)
+
+                settings_user = db.get_user_alerts(uid=u.tgid)
+                if settings_user:
+                    for a in settings_user:
+                        settings = db.get_setting_alert(settings_user=a,kind='url')
+                        if settings:
+                            for i in settings:
+                                settings_prod = db.get_setting_alert(settings_user=a,kind='alert')
+                                if settings_prod:
+                                    for j in settings:
+                                        url = page_url.split('/')[3]
+                                        if i.code in prod_list and url in j.code:
+                                            await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                                        elif i.code in prod_list:
+                                            await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                                        elif url in j.code:
+                                            await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                else:
+                    await bot.send_message(u.tgid, bm.get_static_message('Conf_alerts'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+    else:
+        #notifico
+        db.set_modulo(page_url=page_url,title=title)
+        users = db.get_all_users()
+        formated = '⚠️⚠️⚠️ Alerta Tu envio ⚠️⚠️⚠️\n'
+        for u in users:
+            formated += '{}\n'.format(title)
+            formated += '<b>Precio: {}</b>\n\n'.format(price)
+            formated += '{}'.format(prod_list)
+            formated += '\n<a href="{}">Ver modulo...</a>'.format(page_url)
+
+            settings_user = db.get_user_alerts(uid=u.tgid)
+            if settings_user:
+                for a in settings_user:
+                    settings = db.get_setting_alert(settings_user=a,kind='url')
+                    if settings:
+                        for i in settings:
+                            settings_prod = db.get_setting_alert(settings_user=a,kind='alert')
+                            if settings_prod:
+                                for j in settings:
+                                    url = page_url.split('/')[3]
+                                    if i.code in prod_list and url in j.code:
+                                        await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                                    elif i.code in prod_list:
+                                        await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                                    elif url in j.code:
+                                        await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+            else:
+                await bot.send_message(u.tgid, bm.get_static_message('Conf_alerts'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+       
+            
+            
+
+
+                   
+                
+       
 
 @dp.callback_query_handler(state='*')
 async def process_callback_button(callback_query: types.CallbackQuery):

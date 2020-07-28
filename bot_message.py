@@ -53,7 +53,8 @@ langs = {
         'RemovePhone': "❌ Deleted!!!",
         'Done': "✔️ Done!!!",
         'Subscribed': "You are now subscribed!!!",
-        '5ta': "⚠️⚠️ Modulo en 5ta y 42 ⚠️⚠️!!!",
+        '5ta': "⚠️⚠️ Modul in 5ta & 42 ⚠️⚠️!!!",
+        'Conf_alerts': "⚠️⚠️ You should setup your alerts ⚠️⚠️!!!",
         'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Your cellphone number must be 8-10  digits long and no string or symbols!!!"
     },
     'English' : {
@@ -103,6 +104,7 @@ langs = {
         'Done': "✔️ Hecho!!!",
         'Subscribed': "Usted esta suscrito!!!",
         '5ta': "⚠️⚠️ Modulo en 5ta y 42 ⚠️⚠️!!!",
+        'Conf_alerts': "⚠️⚠️ Usted deberia configurar sus alertas ⚠️⚠️!!!",
         'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Su numero debe ser de 8-10 digitos y sin caracteres o simbolos!!!"
     }
 }

@@ -31,6 +31,7 @@ class Modulos(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255))
     url = Column(String(255))
+    created_at = Column(Integer, nullable=True) 
     
 class ProdModules(Base):
     __tablename__ = 'prodmodules'
