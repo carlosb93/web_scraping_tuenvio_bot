@@ -1,4 +1,4 @@
-worker: python3 main.py & scraper.py
+worker: python3 main.py
 
 
 
