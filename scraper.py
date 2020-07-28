@@ -35,7 +35,7 @@ def main():
         # domain = urlparse(my_url).netloc # domain name
         # print("via domain", domain)
         
-        response = requests.get(uri.code, proxies=proxies) # go to the url and get it
+        response = requests.get(uri.code) # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
         if response.status_code != 200: # not equal, == equal
