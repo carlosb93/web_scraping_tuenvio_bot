@@ -6,3 +6,4 @@ urllib3
 pandas
 beautifulsoup4
 requests
+emoji
