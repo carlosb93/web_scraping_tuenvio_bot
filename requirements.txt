@@ -1,4 +1,4 @@
-aioschedule
+apscheduler
 sqlalchemy
 aiogram
 stop-words
