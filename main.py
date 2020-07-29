@@ -190,14 +190,16 @@ async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
                     for j in settings:
                         url = page_url.split('/')[3]
                         if url in j.code:
-                            await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                            settings_prod = db.get_setting_alert(settings_user=a,kind='alert')
+                            if settings_prod:
+                                for i in settings_prod:
+                                    if i.code in prod_list:
+                                        await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                            else:
+                                await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
                                     
                                     
-                settings_prod = db.get_setting_alert(settings_user=a,kind='alert')
-                if settings_prod:
-                    for i in settings_prod:
-                        if i.code in prod_list:
-                            await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                
         else:
             await bot.send_message(u.tgid, bm.get_static_message('Conf_alerts'), disable_notification=True, parse_mode=types.ParseMode.HTML)
         
@@ -260,7 +262,7 @@ async def router(message: types.Message, state: FSMContext):
         
 
 def schedule_all_taskts():
-    bgscheduler.add_job(tasks.start_scratching, 'cron', hour='*', minute='*', second=0)
+    bgscheduler.add_job(tasks.start_scratching, 'interval', minutes=2)
     bgscheduler.start()
     
     scheduler.add_job(check_db_alert, 'cron', hour='*', minute='*', second=40, kwargs={'bot': bot})    
