@@ -359,10 +359,6 @@ async def start_scratching():
     page_url = db.get_url()
     # system("ping " + page_url)
     for uri in page_url:
-        url_ping = uri.code.split('https://')[1]
-        url_ping = url_ping.split('/')[0]
-        
-        print(system("ping " + url_ping))
         print(uri.code)
         response = requests.get(uri.code,headers=headers) # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
@@ -496,7 +492,7 @@ async def get_modulos_href_5ta(soup=None, page_url=None):
             await alerta_basica()
         
 
-async def schedule_all_taskts():
+async def schedule_all_taskts(queue):
     schedule.every(1).minutes.do(start_scratching)
     while True:
         await schedule.run_pending()
@@ -505,4 +501,4 @@ async def schedule_all_taskts():
 
 if __name__ == '__main__':
     dp.loop.create_task(schedule_all_taskts())
-    executor.start_polling(dp)
+    executor.start_polling(dp, skip_updates=True)
