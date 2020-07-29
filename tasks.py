@@ -22,7 +22,11 @@ def start_scratching():
     page_url = db.get_url()
     # system("ping " + page_url)
     for uri in page_url:
-        response = requests.get(uri.code,headers=headers) # go to the url and get it
+        try:
+            response = requests.get(uri.code,headers=headers) # go to the url and get it
+        except Exception:
+            continue
+        
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
         if response.status_code != 200: # not equal, == equal
@@ -32,6 +36,7 @@ def start_scratching():
             print("Scraping..", uri.code)
                 
             content = response.content
+            
             # content = browser.page_source
             soup = BeautifulSoup(content, 'html.parser')
             if soup:
@@ -76,91 +81,98 @@ def start_scratching():
 
 def get_modulos_href(page_url=None):
     # modulo parser
-    response = requests.get(page_url,headers=headers) # go to the url and get it
-    print("Status is", response.status_code) # 200, 403, 404, 500, 503
+    try:
+        response = requests.get(page_url,headers=headers) # go to the url and get it
+    
+     # go to the url and get it
+        print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
-    if response.status_code != 200: # not equal, == equal
-        print("You can't scrape this", response.status_code)  
-    else:
-        print("Scraping..", page_url)
-                
-        content = response.content
-        # content = browser.page_source
-        soup = BeautifulSoup(content, 'html.parser')
-        if soup:
-            listado = soup.find('ul',attrs={'class':'hProductItems clearfix'})
-            if listado:
-                items = listado.find_all('li',attrs={'class':'span3 clearfix'})
-                if items:
-                    for item in items:
-                        a = item.find('a',href=True,attrs={'class':'invarseColor'})
-                        # title = a.text       # titulo del modulo
-                        href = a.get('href')
-                        url = page_url.split('Products')[0]
-                        url+= href
-                        get_modulos_content(url)
+        if response.status_code != 200: # not equal, == equal
+            print("You can't scrape this", response.status_code)  
+        else:
+            print("Scraping..", page_url)
+                    
+            content = response.content
+            # content = browser.page_source
+            soup = BeautifulSoup(content, 'html.parser')
+            if soup:
+                listado = soup.find('ul',attrs={'class':'hProductItems clearfix'})
+                if listado:
+                    items = listado.find_all('li',attrs={'class':'span3 clearfix'})
+                    if items:
+                        for item in items:
+                            a = item.find('a',href=True,attrs={'class':'invarseColor'})
+                            # title = a.text       # titulo del modulo
+                            href = a.get('href')
+                            url = page_url.split('Products')[0]
+                            url+= href
+                            get_modulos_content(url)
+    except Exception:
+        pass
                 
                         
 def get_modulos_content(page_url=None):
     # modulo parser
-    response = requests.get(page_url,headers=headers) # go to the url and get it
-    print("Status is", response.status_code) # 200, 403, 404, 500, 503
+    try:
+        response = requests.get(page_url,headers=headers) # go to the url and get it
+        print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
-    if response.status_code != 200: # not equal, == equal
-        print("You can't scrape this", response.status_code)  
-    else:
-        print("Scraping..", page_url)
-                
-        content = response.content
-        # content = browser.page_source
-        soup = BeautifulSoup(content, 'html.parser')
-        if soup:
-            title = soup.find('div',attrs={'class':'product-title'})
-            if title:
-                title = title.find('h4')
-                product_set = soup.find('div',attrs={'class':'product-set'})
-                if product_set:
-                    price = product_set.find('div',attrs={'class':'product-price'})
-                    price = price.find('span').text
-                
-                product_desc = soup.find('div',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_pnlKitItems'})
-                if product_desc:
-                    table = soup.find('table',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_gridKitItems'})
-                    elements = table.find_all('td',attrs={'class':'desc'})
-                    if elements:
-                        prod_list ='Productos:\n'
-                        for element in elements:
-                            prod = element.find('a',href=True,attrs={'target':'_blank'})
-                            prod_list += '- {}\n'.format(prod.text) 
-                        
-                        module = db.get_modulo(title=title)
-                        if module:
-                            min = datetime.fromtimestamp(module.created_at/1000)
-                            max = datetime.fromtimestamp(time.time()/1000)
-                            created = (max-min).total_seconds() / 60
-                            if created > 10:
-                                db.set_modulo(page_url=page_url,title=title,price=price,listado=prod_list)
-                            elif module.prod_list == '':
-                                db.set_modulo(page_url=page_url,title=title,price=price,listado=prod_list)
-                        else:
-                            db.add_modulo(page_url=page_url,title=title,price=price,listado=prod_list)
-            else:
-                title = soup.find('td',attrs={'class':'DescriptionValue'})
+        if response.status_code != 200: # not equal, == equal
+            print("You can't scrape this", response.status_code)  
+        else:
+            print("Scraping..", page_url)
+                    
+            content = response.content
+            # content = browser.page_source
+            soup = BeautifulSoup(content, 'html.parser')
+            if soup:
+                title = soup.find('div',attrs={'class':'product-title'})
                 if title:
-                    title = title.find('span').text
-                    price = soup.find('td',attrs={'class':'PrecioProdList'})
-                    if price:
-                        price = price.text
-                        module = db.get_modulo(title=title)
-                        if module:
-                            min = datetime.fromtimestamp(module.created_at/1000)
-                            max = datetime.fromtimestamp(time.time()/1000)
-                            created = (max-min).total_seconds() / 60
-                            if created > 10:
-                                db.set_modulo(page_url=page_url,title=title,price=price,listado='')
-                        else:
-                            db.add_modulo(page_url=page_url,title=title,price=price,listado='')
+                    title = title.find('h4')
+                    product_set = soup.find('div',attrs={'class':'product-set'})
+                    if product_set:
+                        price = product_set.find('div',attrs={'class':'product-price'})
+                        price = price.find('span').text
+                    
+                    product_desc = soup.find('div',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_pnlKitItems'})
+                    if product_desc:
+                        table = soup.find('table',attrs={'id':'ctl00_cphPage_formProduct_ctl00_productDetail_DetailTabs_tabKit_kitItems_gridKitItems'})
+                        elements = table.find_all('td',attrs={'class':'desc'})
+                        if elements:
+                            prod_list ='Productos:\n'
+                            for element in elements:
+                                prod = element.find('a',href=True,attrs={'target':'_blank'})
+                                prod_list += '- {}\n'.format(prod.text) 
                             
+                            module = db.get_modulo(title=title)
+                            if module:
+                                min = datetime.fromtimestamp(module.created_at/1000)
+                                max = datetime.fromtimestamp(time.time()/1000)
+                                created = (max-min).total_seconds() / 60
+                                if created > 10:
+                                    db.set_modulo(page_url=page_url,title=title,price=price,listado=prod_list)
+                                elif module.prod_list == '':
+                                    db.set_modulo(page_url=page_url,title=title,price=price,listado=prod_list)
+                            else:
+                                db.add_modulo(page_url=page_url,title=title,price=price,listado=prod_list)
+                else:
+                    title = soup.find('td',attrs={'class':'DescriptionValue'})
+                    if title:
+                        title = title.find('span').text
+                        price = soup.find('td',attrs={'class':'PrecioProdList'})
+                        if price:
+                            price = price.text
+                            module = db.get_modulo(title=title)
+                            if module:
+                                min = datetime.fromtimestamp(module.created_at/1000)
+                                max = datetime.fromtimestamp(time.time()/1000)
+                                created = (max-min).total_seconds() / 60
+                                if created > 10:
+                                    db.set_modulo(page_url=page_url,title=title,price=price,listado='')
+                            else:
+                                db.add_modulo(page_url=page_url,title=title,price=price,listado='')
+    except Exception:
+        pass                        
                 
                         
 

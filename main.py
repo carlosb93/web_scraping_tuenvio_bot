@@ -197,6 +197,12 @@ async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
                                         await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
                             else:
                                 await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                else:
+                    settings_prod = db.get_setting_alert(settings_user=a,kind='alert')
+                    if settings_prod:
+                        for i in settings_prod:
+                            if i.code in prod_list:
+                                await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
                                     
                                     
                 
