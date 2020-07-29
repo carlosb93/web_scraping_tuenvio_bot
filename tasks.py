@@ -1,6 +1,5 @@
 import time
 import logging
-import asyncio
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -17,8 +16,8 @@ proxies = { 'http': 'http://proxy.server:3128',
       
     
 
-async def start_scratching():
-    # await alerta_start_scraping()
+def start_scratching():
+    
     
     page_url = db.get_url()
     # system("ping " + page_url)
@@ -54,7 +53,7 @@ async def start_scratching():
                                 else:
                                     db.add_modulo(page_url=uri.code,title='5ta y 42',price='',listado='')
                                                        
-                                # await alerta_basica()
+                                
             
                     # get_modulos_href_5ta(soup=soup,page_url=uri.code)
                     # sleep(5)
@@ -68,14 +67,14 @@ async def start_scratching():
                                 url+= href
                                 print('----------Accediendo a modulo en tu envio con ruta---------')
                                 print(url)
-                                await get_modulos_href(page_url=url)
+                                get_modulos_href(page_url=url)
                             else:
                                 pass
                     
         pass
 
 
-async def get_modulos_href(page_url=None):
+def get_modulos_href(page_url=None):
     # modulo parser
     response = requests.get(page_url,headers=headers) # go to the url and get it
     print("Status is", response.status_code) # 200, 403, 404, 500, 503
@@ -99,10 +98,10 @@ async def get_modulos_href(page_url=None):
                         href = a.get('href')
                         url = page_url.split('Products')[0]
                         url+= href
-                        await get_modulos_content(url)
+                        get_modulos_content(url)
                 
                         
-async def get_modulos_content(page_url=None):
+def get_modulos_content(page_url=None):
     # modulo parser
     response = requests.get(page_url,headers=headers) # go to the url and get it
     print("Status is", response.status_code) # 200, 403, 404, 500, 503
@@ -161,6 +160,7 @@ async def get_modulos_content(page_url=None):
                                 db.set_modulo(page_url=page_url,title=title,price=price,listado='')
                         else:
                             db.add_modulo(page_url=page_url,title=title,price=price,listado='')
+                            
                 
                         
 

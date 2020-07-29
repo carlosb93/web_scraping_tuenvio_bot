@@ -3,10 +3,12 @@ import json
 import sqlite3
 from numpy import genfromtxt
 import time
+import contextlib
 from data.db_map import Base, Productos, Modulos, ProdModules, User, Settings, Settings4User
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session
 from config import DB_FILENAME, DB_LOCATION, ADMIN_ID
 
 db_empty = False
@@ -30,10 +32,11 @@ else:
 
  
 DBSession = sessionmaker(bind=engine)
+Session = scoped_session(DBSession)
 # A DBSession() instance establishes all conversations with the database
 # and represents a "staging zone" for all the objects loaded into the
 # database session object. 
-s = DBSession()
+s = Session()
 
 def is_registered(uid):
     user = get_user(uid=uid)
@@ -50,6 +53,7 @@ def kick_from_alliance(guild):
     guild.alliance_id = 'Unknown Alliance'
     s.add(guild)
     s.commit() 
+    s.close()
     
 def on_user_setting(uid, sett):
     user = get_user(uid=uid)
@@ -62,6 +66,7 @@ def on_user_setting(uid, sett):
         except sqlalchemy.orm.exc.NoResultFound:
             s.add(Settings4User(setting=sett, user=user.name, value=1))    
         s.commit()
+        s.close()
 
 def off_user_setting(uid, sett):
     user = get_user(uid=uid)
@@ -74,6 +79,7 @@ def off_user_setting(uid, sett):
         except sqlalchemy.orm.exc.NoResultFound:
             s.add(Settings4User(setting=sett, user=user.name, value=0)) 
         s.commit() 
+        s.close()
         
 # Settings
     
@@ -103,7 +109,9 @@ def unset_modulo(page_url=None,title=None,price=None):
             module.activo = False
             s.add(module)
             s.commit()
+            s.close()
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def set_modulo(page_url=None,title=None,price=None,listado=None):
@@ -121,29 +129,42 @@ def set_modulo(page_url=None,title=None,price=None,listado=None):
             module.created_at = time.time()
             s.add(module)
             s.commit()
+            s.close()
+            
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
             
         
 def add_modulo(page_url=None,title=None,price=None,listado=None):
     s.add(Modulos(name=title, url=page_url, price=price, listado=listado, activo=True, created_at=time.time()))
     s.commit()
+    s.close()
+    
     
 
 def get_modulo(title=None):
     module = s.query(Modulos).filter(Modulos.name == title)
     if module:
         try:
-            return module.one()
+            module = module.one()
+            s.close()
+            return module
+            
+        
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def get_module_all():
     module = s.query(Modulos).filter(Modulos.activo == True)
     if module:
         try:
-            return module.all()
+            module = module.all()
+            s.close()
+            return module
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
 
 
@@ -152,6 +173,7 @@ def get_module_all():
 def create_user(name=None,lang=None, arroba=None, tgid=None):
     s.add(User(name=name,lang=lang, arroba=arroba, tgid=tgid, pay=True, pay_date=time.time()))
     s.commit()
+    s.close()
     return 'New User Created'
 
 
@@ -163,6 +185,7 @@ def update_user_phone(phone=None, tgid=None):
         user.phone = phone
     s.add(user)
     s.commit()
+    s.close()
     return 'User Subscribed'
 
 def del_user_phone(tgid=None):
@@ -173,6 +196,7 @@ def del_user_phone(tgid=None):
         user.pay = False
     s.add(user)
     s.commit()
+    s.close()
     return 'Succesfully'
 
 def disable_user_subscription(tgid=None):
@@ -182,6 +206,7 @@ def disable_user_subscription(tgid=None):
         user.pay = False
     s.add(user)
     s.commit()
+    s.close()
     return 'Succesfully'
 
 def enable_user_subscription(tgid=None):
@@ -192,6 +217,7 @@ def enable_user_subscription(tgid=None):
         user.pay_date = time.time()
     s.add(user)
     s.commit()
+    s.close()
     return 'Succesfully'
     
 def get_user(uid=None, name=None):
@@ -202,16 +228,22 @@ def get_user(uid=None, name=None):
         qry = user.filter(User.name == name)
     if qry:
         try:
-            return qry.one()
+            qry = qry.one()
+            s.close()
+            return qry
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def get_all_users():
     user = s.query(User)
     if user:
         try:
-            return user.all()
+            user = user.all()
+            s.close()
+            return user
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def get_user_alerts(uid=None):
@@ -220,8 +252,11 @@ def get_user_alerts(uid=None):
         setting = setting.filter(Settings4User.user_id == uid)
     if setting:
         try:
-            return setting.all()
+            setting = setting.all()
+            s.close()
+            return setting
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def get_alerta_activa(uid=None,setting_id=None):
@@ -230,8 +265,11 @@ def get_alerta_activa(uid=None,setting_id=None):
         setting = setting.filter(Settings4User.user_id == uid)
         setting = setting.filter(Settings4User.setting_id == setting_id)
         try:
-            return setting.all()
+            setting = setting.all()
+            s.close()
+            return setting
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def get_user_alert(uid=None, setting_id=None):
@@ -241,8 +279,11 @@ def get_user_alert(uid=None, setting_id=None):
         setting = setting.filter(Settings4User.setting_id == setting_id)
     if setting:
         try:
-            return setting.one()
+            setting = setting.one()
+            s.close()
+            return setting
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def del_user_alert(uid=None, setting_id=None):
@@ -253,7 +294,9 @@ def del_user_alert(uid=None, setting_id=None):
     if setting:
         try:
             setting.delete()
+            s.close()
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def ban_user(tgid=None):
@@ -263,14 +306,18 @@ def ban_user(tgid=None):
     if usuario:
         try:
             usuario.delete()
+            s.close()
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def add_user_alert(uid=None, setting_id=None):
     try:
         s.add(Settings4User(setting_id=setting_id,user_id=uid))
         s.commit()
+        s.close()
     except sqlalchemy.orm.exc.NoResultFound:
+        s.close()
         pass
         
 def get_url():
@@ -278,8 +325,11 @@ def get_url():
     if setting:
         setting = setting.filter(Settings.setting_type == 'url')
         try:
-            return setting.all()
+            setting = setting.all()
+            s.close()
+            return setting
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def get_setting_alert(settings_user=None, kind=None):
@@ -297,8 +347,11 @@ def get_setting_alert(settings_user=None, kind=None):
         
     if setting:
         try:
-            return setting.all()
+            setting = setting.all()
+            s.close()
+            return setting
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 def get_setting_alert_left(settings_user=None, kind=None):
@@ -319,8 +372,11 @@ def get_setting_alert_left(settings_user=None, kind=None):
         
     if setting:
         try:
-            return setting.all()
+            setting = setting.all()
+            s.close()
+            return setting
         except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
             pass
         
 
@@ -345,6 +401,7 @@ def add_user(name, lang=None, class_list=None, level=None, guild_name=None, guil
     else:
         s.add(User(name=name, lang=None, level=level, is_subcommander=0, guild_id=guild_name, attack=attack, defence=defence, castle=castle, arroba=arroba, tgid=tgid, tgname=tgname))
     s.commit()
+    s.close()
 
 def update_user(user, lang=None, class_list=None, level=None, guild_name=None, guild_tag=None, castle=None, attack=None, defence=None, arroba=None, tgid=None, tgname=None):
     if class_list:
@@ -379,10 +436,12 @@ def update_user(user, lang=None, class_list=None, level=None, guild_name=None, g
         user.tgname = tgname
     s.add(user)
     s.commit()
+    s.close()
 
 def add_or_update_user(name, lang=None, class_list=None, level=None, attack=None, defence=None, guild_tag=None, guild_name=None, castle=None, arroba=None, tgid=None, tgname=None):
     try:
         u = s.query(User).filter(User.name == name).one()
+        s.close()
         if u.tgid == None or u.tgid == tgid or tgid == None:
             update_user(u, lang=None, class_list=class_list,level=level, attack=attack, defence=defence, guild_tag=guild_tag, guild_name=guild_name, castle=castle, arroba=arroba, tgid=tgid, tgname=tgname)
         else:
@@ -391,13 +450,14 @@ def add_or_update_user(name, lang=None, class_list=None, level=None, attack=None
         if tgid:
             try:
                 u = s.query(User).filter(User.tgid == tgid).one()
+                s.close()
                 print('User with uid {} tried to send a new Me'.format(tgid))
                 return
             except sqlalchemy.orm.exc.NoResultFound:
                 pass
         # u = s.query(User).filter(User.name == name).one()
         add_user(name, lang=None, class_list=class_list,level=level, attack=attack, defence=defence, guild_tag=guild_tag, guild_name=guild_name, castle=castle, arroba=arroba, tgid=tgid, tgname=tgname)
-
+        
 # Orders
 
 
@@ -418,6 +478,7 @@ def init_res():
     finally:
         c.close()
         conn.close()
+        
 
 if db_empty: 
     init_res()

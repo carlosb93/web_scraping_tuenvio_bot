@@ -31,16 +31,6 @@ from aiogram.utils.markdown import text, bold, italic, code, pre
 from aiogram.types import ParseMode, InputMediaPhoto, InputMediaVideo, ChatActions
 
 
-# schedstop = threading.Event()
-# def schedule_run_pending():
-#     while not schedstop.is_set():
-#         schedule.run_pending()
-#         time.sleep(3)
-        
-# schedthread = threading.Thread(target=schedule_run_pending)
-# schedthread.start()
-
-
 logging.basicConfig(format=u'%(filename)s [ LINE:%(lineno)+3s ]#%(levelname)+8s [%(asctime)s]  %(message)s',
                     level=logging.INFO)
 
@@ -270,7 +260,9 @@ async def router(message: types.Message, state: FSMContext):
         
 
 def schedule_all_taskts():
-    scheduler.add_job(tasks.start_scratching, 'cron', hour='*', minute='*', second=0)
+    bgscheduler.add_job(tasks.start_scratching, 'cron', hour='*', minute='*', second=0)
+    bgscheduler.start()
+    
     scheduler.add_job(check_db_alert, 'cron', hour='*', minute='*', second=40, kwargs={'bot': bot})    
     scheduler.start()
     
