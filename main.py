@@ -9,6 +9,7 @@ import aioschedule as schedule
 import db_handler as db
 import bot_message as bm
 
+from os import system
 from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.parse import urlparse
@@ -356,7 +357,8 @@ async def start_scratching():
     await alerta_start_scraping()
     
     page_url = db.get_url()
-   
+    # system("ping " + page_url)
+    print(system("ping " + page_url))
     for uri in page_url:
         print(uri.code)
         response = requests.get(uri.code,headers=headers) # go to the url and get it
