@@ -14,10 +14,12 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.parse import urlparse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from navigation import Navigation, go_to
 from config import TOKEN, REQUEST_KWARGS
 
 scheduler = AsyncIOScheduler()
+bgscheduler = BackgroundScheduler()
 
 from aiogram import Bot, types
 from aiogram.utils import executor
@@ -162,7 +164,54 @@ async def general_commands(message: types.Message):
                     phone = command[10:].strip()
                     db.update_user_phone(phone=phone,tgid=message['from']['id'])            
                     await message.answer(bm.get_static_message('Subscribed'),parse_mode=types.ParseMode.HTML)
-                    
+ 
+
+async def check_db_alert(bot):
+    modulos = db.get_module_all()
+    if modulos:
+        for modulo in modulos:
+            min = datetime.fromtimestamp(modulo.created_at/1000)
+            max = datetime.fromtimestamp(time.time()/1000)
+            created = (max-min).total_seconds() / 60
+            if created > 10:
+                db.unset_modulo(page_url=modulo.url,title=modulo.name,price=modulo.price)
+                await alerta_tu_envio(page_url=modulo.url,title=modulo.name,price=modulo.price,prod_list=modulo.listado)
+                
+            else:
+                db.unset_modulo(page_url=modulo.url,title=modulo.name,price=modulo.price)
+                await alerta_tu_envio(page_url=modulo.url,title=modulo.name,price=modulo.price,prod_list=modulo.listado)
+            
+           
+    
+async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
+    users = db.get_all_users()
+    formated = '⚠️⚠️⚠️ Alerta Tu envio ⚠️⚠️⚠️\n'
+    for u in users:
+        formated += '{}\n'.format(title)
+        formated += '<b>Precio: {}</b>\n\n'.format(price)
+        formated += '{}'.format(prod_list)
+        formated += '\n<a href="{}">Ver modulo...</a>'.format(page_url)
+
+        settings_user = db.get_user_alerts(uid=u.tgid)
+        if settings_user:
+            for a in settings_user:
+                settings = db.get_setting_alert(settings_user=a,kind='url')
+                if settings:
+                    for j in settings:
+                        url = page_url.split('/')[3]
+                        if url in j.code:
+                            await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+                                    
+                                    
+                settings_prod = db.get_setting_alert(settings_user=a,kind='alert')
+                if settings_prod:
+                    for i in settings_prod:
+                        if i.code in prod_list:
+                            await bot.send_message(u.tgid, formated, disable_notification=True, parse_mode=types.ParseMode.HTML)
+        else:
+            await bot.send_message(u.tgid, bm.get_static_message('Conf_alerts'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+        
+        return True                   
 
             
             
@@ -221,12 +270,9 @@ async def router(message: types.Message, state: FSMContext):
         
 
 def schedule_all_taskts():
-    scheduler.add_job(tasks.start_scratching, 'cron', hour='*', minute='*', second=0, kwargs={'bot': bot})
+    scheduler.add_job(tasks.start_scratching, 'cron', hour='*', minute='*', second=0)
+    scheduler.add_job(check_db_alert, 'cron', hour='*', minute='*', second=40, kwargs={'bot': bot})    
     scheduler.start()
-    # schedule.every(1).minutes.do(start_scratching)
-    # while True:
-    #     await schedule.run_pending()
-    #     await asyncio.sleep(2)
     
 
 if __name__ == '__main__':

@@ -91,7 +91,22 @@ def enable_conf_user(tgid=None, name=None): # ✔️
         add_user_alert(tgid,name)
 
 #modulos
-def set_modulo(page_url=None,title=None):
+def unset_modulo(page_url=None,title=None,price=None):
+    module = s.query(Modulos)
+    if module:
+        try:
+            module = module.filter(Modulos.name == title)
+            module = module.filter(Modulos.price == price)
+            module = module.filter(Modulos.url == page_url)
+            module = module.one()
+            
+            module.activo = False
+            s.add(module)
+            s.commit()
+        except sqlalchemy.orm.exc.NoResultFound:
+            pass
+        
+def set_modulo(page_url=None,title=None,price=None,listado=None):
     module = s.query(Modulos)
     if module:
         try:
@@ -100,6 +115,9 @@ def set_modulo(page_url=None,title=None):
             
             module.name = title
             module.url = page_url
+            module.price = price
+            module.listado = listado
+            module.activo = True
             module.created_at = time.time()
             s.add(module)
             s.commit()
@@ -107,8 +125,8 @@ def set_modulo(page_url=None,title=None):
             pass
             
         
-def add_modulo(page_url=None,title=None):
-    s.add(Modulos(name=title,url=page_url, created_at=time.time()))
+def add_modulo(page_url=None,title=None,price=None,listado=None):
+    s.add(Modulos(name=title, url=page_url, price=price, listado=listado, activo=True, created_at=time.time()))
     s.commit()
     
 
@@ -117,6 +135,14 @@ def get_modulo(title=None):
     if module:
         try:
             return module.one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            pass
+        
+def get_module_all():
+    module = s.query(Modulos).filter(Modulos.activo == True)
+    if module:
+        try:
+            return module.all()
         except sqlalchemy.orm.exc.NoResultFound:
             pass
 

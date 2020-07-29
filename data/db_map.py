@@ -1,6 +1,6 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -31,6 +31,9 @@ class Modulos(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255))
     url = Column(String(255))
+    price = Column(String(255))
+    listado = Column(Text, nullable=True)
+    activo = Column(Integer, nullable=True)
     created_at = Column(Integer, nullable=True) 
     
 class ProdModules(Base):
