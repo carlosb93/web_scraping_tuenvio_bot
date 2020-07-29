@@ -358,8 +358,8 @@ async def start_scratching():
     
     page_url = db.get_url()
     # system("ping " + page_url)
-    print(system("ping " + page_url))
     for uri in page_url:
+        print(system("ping " + uri.code))
         print(uri.code)
         response = requests.get(uri.code,headers=headers) # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
