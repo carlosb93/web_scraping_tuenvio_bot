@@ -154,7 +154,7 @@ async def start_scratching(bot):
     page_url = db.get_url()
     # system("ping " + page_url)
     for uri in page_url:
-        print(uri.code)
+        uri.code = 'https://www.tuenvio.cu/carlos3/Products?depPid=0'
         response = requests.get(uri.code,headers=headers) # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
