@@ -52,7 +52,7 @@ def is_admin(uid):
 def is_kind_prod(data=None):
     qry = s.query(Settings).filter(Settings.name == data).one()
     s.close()
-    if qry.kind == 'alert':
+    if qry.setting_type == 'alert':
         return True
     else:
         return False
@@ -60,7 +60,7 @@ def is_kind_prod(data=None):
 def is_kind_url(data=None):
     qry = s.query(Settings).filter(Settings.name == data).one()
     s.close()
-    if qry.kind == 'url':
+    if qry.setting_type == 'url':
         return True
     else:
         return False
@@ -102,15 +102,17 @@ def off_user_setting(uid, sett):
 
 def disable_conf_user(tgid=None, name=None):# ❌
     setting = s.query(Settings).filter(Settings.name == name).one()
+    s.close()
     if setting:
-        del_user_alert(tgid,setting.name)
+        del_user_alert(uid=tgid,setting_id=setting.name)
         
         
 
 def enable_conf_user(tgid=None, name=None): # ✔️
     setting = s.query(Settings).filter(Settings.name == name).one()
+    s.close()
     if setting:
-        add_user_alert(tgid,name)
+        add_user_alert(uid=tgid,setting_id=setting.name)
 
 #modulos
 def unset_modulo(page_url=None,title=None,price=None):
@@ -310,18 +312,7 @@ def del_user_alert(uid=None, setting_id=None):
     if setting:
         try:
             setting.delete()
-            s.close()
-        except sqlalchemy.orm.exc.NoResultFound:
-            s.close()
-            pass
-        
-def ban_user(tgid=None):
-    usuario = s.query(User)
-    if tgid:
-        usuario = usuario.filter(User.tgid == tgid)
-    if usuario:
-        try:
-            usuario.delete()
+            s.commit()
             s.close()
         except sqlalchemy.orm.exc.NoResultFound:
             s.close()
@@ -335,6 +326,20 @@ def add_user_alert(uid=None, setting_id=None):
     except sqlalchemy.orm.exc.NoResultFound:
         s.close()
         pass
+    
+def ban_user(tgid=None):
+    usuario = s.query(User)
+    if tgid:
+        usuario = usuario.filter(User.tgid == tgid)
+    if usuario:
+        try:
+            usuario.delete()
+            s.commit()
+            s.close()
+        except sqlalchemy.orm.exc.NoResultFound:
+            s.close()
+            pass
+        
         
 def get_url():
     setting = s.query(Settings)

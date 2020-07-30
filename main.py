@@ -230,44 +230,42 @@ async def process_callback_button(callback_query: types.CallbackQuery):
         if alerta_activa:            
             
             db.disable_conf_user(tgid=callback_query.from_user.id, name=data)# ❌ 
-            if db.is_kind_prod:
+            
+            if db.is_kind_prod(data):
                 rply = bm.get_user_alert_status_prod(callback_query.from_user.id)
                 rply_inline_btn = bm.get_alert_options_btn_prod(callback_query.from_user.id)
             else:
                 rply = bm.get_user_alert_status_url(callback_query.from_user.id)
                 rply_inline_btn = bm.get_alert_options_btn_url(callback_query.from_user.id)
-            print(callback_query.message)
-            await bot.edit_message_text(text=rply,message_id=callback_query.message,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)        
+            
             await bot.answer_callback_query(callback_query.id, bm.get_static_message('RemoveAlert',ulang='Spanish'))
-            # await bot.send_message(callback_query.from_user.id, bm.get_static_message('RemoveAlert',ulang='Spanish'))
+            await bot.edit_message_text(text=rply,chat_id=callback_query.message.chat.id,message_id=callback_query.message.message_id,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)        
         else:
             
             db.enable_conf_user(tgid=callback_query.from_user.id, name=data) # ✅
             
-            if db.is_kind_prod:
+            if db.is_kind_prod(data):
                 rply = bm.get_user_alert_status_prod(callback_query.from_user.id)
                 rply_inline_btn = bm.get_alert_options_btn_prod(callback_query.from_user.id)
             else:
                 rply = bm.get_user_alert_status_url(callback_query.from_user.id)
                 rply_inline_btn = bm.get_alert_options_btn_url(callback_query.from_user.id)
-            print(callback_query.message)
-            await bot.edit_message_text(text=rply,message_id=callback_query.message,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)        
+                
             await bot.answer_callback_query(callback_query.id, bm.get_static_message('AddedAlert',ulang='Spanish'))            
-            # await bot.send_message(callback_query.from_user.id, bm.get_static_message('AddedAlert',ulang='Spanish'))
+            await bot.edit_message_text(text=rply,chat_id=callback_query.message.chat.id,message_id=callback_query.message.message_id,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)
     else:
         
         db.enable_conf_user(tgid=callback_query.from_user.id, name=data) # ✅
         
-        if db.is_kind_prod:
+        if db.is_kind_prod(data):
             rply = bm.get_user_alert_status_prod(callback_query.from_user.id)
             rply_inline_btn = bm.get_alert_options_btn_prod(callback_query.from_user.id)
         else:
             rply = bm.get_user_alert_status_url(callback_query.from_user.id)
             rply_inline_btn = bm.get_alert_options_btn_url(callback_query.from_user.id)
-        print(callback_query.message)
-        await bot.edit_message_text(text=rply,message_id=callback_query.message,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)                  
+            
         await bot.send_message(callback_query.from_user.id, bm.get_static_message('AddedAlert',ulang='Spanish'))
-        # await bot.answer_callback_query(callback_query.id, bm.get_static_message('AddedAlert',ulang='Spanish'))
+        await bot.edit_message_text(text=rply,chat_id=callback_query.message.chat.id,message_id=callback_query.message.message_id,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)
 
     
 @dp.message_handler(state='*')
