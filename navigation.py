@@ -14,19 +14,19 @@ class Navigation(StatesGroup):
 def load_main(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
     markup.add("🔊 Elegir Productos 📦", "🔊 Elegir Tiendas 🛒")
-    markup.add("⚙️ Settings")
+    markup.add("⚙️ Configuración")
     if db.is_admin(message['from']['id']):
         markup.add("🔰 Admin")
     return markup  
 
 def load_settings(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-    markup.add("🔙Go Back")
+    markup.add("🔙Atrás")
     return markup  
  
 def load_admin(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
-    markup.add("👥Users", "🔙Go Back")
+    markup.add("👥Usuarios", "🔙Atrás")
     return markup   
 
 

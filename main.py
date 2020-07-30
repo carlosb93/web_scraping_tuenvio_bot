@@ -61,7 +61,7 @@ async def process_main(message: types.Message):
             rply_inline_btn = bm.get_alert_options_btn_url(u.tgid)
             await message.answer(text=rply, disable_notification=False,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)
 
-        elif message.text == "⚙️ Settings":
+        elif message.text == "⚙️ Configuración":
             rply = bm.get_settings_menu(message)
             await message.answer(text=rply, parse_mode=types.ParseMode.HTML)
 
@@ -74,7 +74,7 @@ async def process_main(message: types.Message):
 async def process_settings(message: types.Message):
     if db.is_registered(message['from']['id']):
             
-        if message.text == "🔙Go Back":
+        if message.text == "🔙Atrás":
             broadcast_target[message['from']['id']] = []
             await go_to('main', message, '..')
 
@@ -86,11 +86,11 @@ async def process_settings(message: types.Message):
 async def process_admin(message: types.Message):
     if db.is_admin(message['from']['id']):
             
-        if message.text == "🔙Go Back":
+        if message.text == "🔙Atrás":
             broadcast_target[message['from']['id']] = []
             await go_to('main', message, '..')
 
-        elif message.text == "👥Users" and db.is_admin(message['from']['id']):
+        elif message.text == "👥Usuarios" and db.is_admin(message['from']['id']):
             await message.answer(text=bm.get_all_users_admin(), parse_mode=types.ParseMode.HTML)     
     else:
         await message.reply(bm.get_static_message('NoPriviledges'))
@@ -104,7 +104,7 @@ async def general_commands(message: types.Message):
             
         if message.text.startswith('/removeme'):
             db.del_user_phone(tgid=message['from']['id'])
-            await message.answer(bm.get_static_message('RemovePhone'), parse_mode=types.ParseMode.HTML)
+            await message.answer(bm.get_static_message('RemovePhone',ulang='Spanish'), parse_mode=types.ParseMode.HTML)
         if db.is_admin(message['from']['id']):
             
             if message.text.startswith('/enable_'):
@@ -116,7 +116,7 @@ async def general_commands(message: types.Message):
                     tgid = command[8:].strip()
                 
                 db.enable_user_subscription(tgid=tgid)
-                await message.answer(bm.get_static_message('Done'), parse_mode=types.ParseMode.HTML)
+                await message.answer(bm.get_static_message('Done',ulang='Spanish'), parse_mode=types.ParseMode.HTML)
             
             if message.text.startswith('/disable_'):
                 command = message.text
@@ -127,7 +127,7 @@ async def general_commands(message: types.Message):
                     tgid = command[9:].strip()
                     
                 db.disable_user_subscription(tgid=tgid)
-                await message.answer(bm.get_static_message('Done'), parse_mode=types.ParseMode.HTML)
+                await message.answer(bm.get_static_message('Done',ulang='Spanish'), parse_mode=types.ParseMode.HTML)
             
             if message.text.startswith('/ban_'):
                 command = message.text
@@ -147,13 +147,13 @@ async def general_commands(message: types.Message):
         elif message.text.startswith('/subscribe'):    
                 command = message.text
                 if '#' in command:
-                    await go_to('main', message, bm.get_static_message('WrongNumber'))
+                    await go_to('main', message, bm.get_static_message('WrongNumber',ulang='Spanish'))
                 else:
                     if '@' in command:
                         command = command.split('@')[0]
                     phone = command[10:].strip()
                     db.update_user_phone(phone=phone,tgid=message['from']['id'])            
-                    await message.answer(bm.get_static_message('Subscribed'),parse_mode=types.ParseMode.HTML)
+                    await message.answer(bm.get_static_message('Subscribed',ulang='Spanish'),parse_mode=types.ParseMode.HTML)
  
 
 async def check_db_alert(bot):
@@ -175,12 +175,12 @@ async def check_db_alert(bot):
     
 async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
     users = db.get_all_users()
-    formated = '⚠️⚠️⚠️ Alerta Tu envio ⚠️⚠️⚠️\n'
+    formated = '⚠️⚠️⚠️ Alerta Nuevo Módulo ⚠️⚠️⚠️\n'
     for u in users:
         formated += '{}\n'.format(title)
         formated += '<b>Precio: {}</b>\n\n'.format(price)
         formated += '{}'.format(prod_list)
-        formated += '\n<a href="{}">Ver modulo...</a>'.format(page_url)
+        formated += '\n<a href="{}">Ver Módulo...</a>'.format(page_url)
 
         settings_user = db.get_user_alerts(uid=u.tgid)
         if settings_user:
@@ -207,7 +207,7 @@ async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
                                     
                 
         else:
-            await bot.send_message(u.tgid, bm.get_static_message('Conf_alerts'), disable_notification=True, parse_mode=types.ParseMode.HTML)
+            await bot.send_message(u.tgid, bm.get_static_message('Conf_alerts',ulang='Spanish'), disable_notification=True, parse_mode=types.ParseMode.HTML)
         
         return True                   
 
@@ -230,21 +230,44 @@ async def process_callback_button(callback_query: types.CallbackQuery):
         if alerta_activa:            
             
             db.disable_conf_user(tgid=callback_query.from_user.id, name=data)# ❌ 
-                    
-            await bot.answer_callback_query(callback_query.id, bm.get_static_message('RemoveAlert'))
-            await bot.send_message(callback_query.from_user.id, bm.get_static_message('RemoveAlert'))
+            if db.is_kind_prod:
+                rply = bm.get_user_alert_status_prod(callback_query.from_user.id)
+                rply_inline_btn = bm.get_alert_options_btn_prod(callback_query.from_user.id)
+            else:
+                rply = bm.get_user_alert_status_url(callback_query.from_user.id)
+                rply_inline_btn = bm.get_alert_options_btn_url(callback_query.from_user.id)
+            print(callback_query.message)
+            await bot.edit_message_text(text=rply,message_id=callback_query.message,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)        
+            await bot.answer_callback_query(callback_query.id, bm.get_static_message('RemoveAlert',ulang='Spanish'))
+            # await bot.send_message(callback_query.from_user.id, bm.get_static_message('RemoveAlert',ulang='Spanish'))
         else:
             
             db.enable_conf_user(tgid=callback_query.from_user.id, name=data) # ✅
-                
-            await bot.answer_callback_query(callback_query.id, bm.get_static_message('AddedAlert'))
-            await bot.send_message(callback_query.from_user.id, bm.get_static_message('AddedAlert'))
+            
+            if db.is_kind_prod:
+                rply = bm.get_user_alert_status_prod(callback_query.from_user.id)
+                rply_inline_btn = bm.get_alert_options_btn_prod(callback_query.from_user.id)
+            else:
+                rply = bm.get_user_alert_status_url(callback_query.from_user.id)
+                rply_inline_btn = bm.get_alert_options_btn_url(callback_query.from_user.id)
+            print(callback_query.message)
+            await bot.edit_message_text(text=rply,message_id=callback_query.message,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)        
+            await bot.answer_callback_query(callback_query.id, bm.get_static_message('AddedAlert',ulang='Spanish'))            
+            # await bot.send_message(callback_query.from_user.id, bm.get_static_message('AddedAlert',ulang='Spanish'))
     else:
         
         db.enable_conf_user(tgid=callback_query.from_user.id, name=data) # ✅
-                        
-        await bot.send_message(callback_query.from_user.id, bm.get_static_message('AddedAlert'))
-        await bot.answer_callback_query(callback_query.id, bm.get_static_message('AddedAlert'))
+        
+        if db.is_kind_prod:
+            rply = bm.get_user_alert_status_prod(callback_query.from_user.id)
+            rply_inline_btn = bm.get_alert_options_btn_prod(callback_query.from_user.id)
+        else:
+            rply = bm.get_user_alert_status_url(callback_query.from_user.id)
+            rply_inline_btn = bm.get_alert_options_btn_url(callback_query.from_user.id)
+        print(callback_query.message)
+        await bot.edit_message_text(text=rply,message_id=callback_query.message,reply_markup=rply_inline_btn, parse_mode=types.ParseMode.HTML)                  
+        await bot.send_message(callback_query.from_user.id, bm.get_static_message('AddedAlert',ulang='Spanish'))
+        # await bot.answer_callback_query(callback_query.id, bm.get_static_message('AddedAlert',ulang='Spanish'))
 
     
 @dp.message_handler(state='*')
@@ -256,7 +279,7 @@ async def router(message: types.Message, state: FSMContext):
     if message['chat']['type'] == 'private':
         current_state = await state.get_state()
         if current_state is None:
-            await go_to('main', message, bm.get_static_message('Welcome'))
+            await go_to('main', message, bm.get_static_message('Welcome',ulang='Spanish'))
             await process_main(message)
         elif current_state == Navigation.main.state:
             await process_main(message)

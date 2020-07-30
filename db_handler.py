@@ -49,6 +49,22 @@ def is_admin(uid):
         return True
     return False
 
+def is_kind_prod(data=None):
+    qry = s.query(Settings).filter(Settings.name == data).one()
+    s.close()
+    if qry.kind == 'alert':
+        return True
+    else:
+        return False
+
+def is_kind_url(data=None):
+    qry = s.query(Settings).filter(Settings.name == data).one()
+    s.close()
+    if qry.kind == 'url':
+        return True
+    else:
+        return False
+
 def kick_from_alliance(guild):
     guild.alliance_id = 'Unknown Alliance'
     s.add(guild)

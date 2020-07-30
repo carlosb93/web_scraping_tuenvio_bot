@@ -7,7 +7,7 @@ from aiogram.types import ReplyKeyboardRemove, \
     InlineKeyboardMarkup, InlineKeyboardButton
 
 langs = {
-    'Spanish' : {
+    'English' : {
         'adjustSettings': "Adjust your settings",
         'AllianceCreated': 'Alliance info created!',
         'AllianceUpdated': 'Alliance info updated!',
@@ -58,7 +58,7 @@ langs = {
         'start_scrap': "⚠️ Start scratching!!!",
         'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Your cellphone number must be 8-10  digits long and no string or symbols!!!"
     },
-    'English' : {
+    'Spanish' : {
         'adjustSettings': "Ajusta tus configuraciones",
         'AllianceCreated': 'Información de Alianza creada!',
         'AllianceUpdated': 'Información de Alianza actualizada!',
@@ -93,21 +93,21 @@ langs = {
         'RosterUpdated': 'Lista del gremio actualizada!',
         'ReportOK': 'Gracias por enviar el reporte',
         'SettingOverview': "Descripción general de la configuración",
-        'UserNotRegister': "Hola soy un Bot de alerta rapida.\nEnviame tu numero ☎️ para suscribirte a las alertas\n\n /subscribe ########",
+        'UserNotRegister': "Hola soy un Bot de alerta rápida.\nEnvíame tu número ☎️ para suscribirte a las alertas\n\n /subscribe ########",
         'UnknownCWMsg': 'Mensaje de ChatWars no reconocido!',
         'Stock': 'Generando mensaje de deposito!',
         'Welcome': "Bienvenido de vuelta",
         'WelcomeAdmin': "Bienvenido Admin",
         'WelcomeCommander': "Bienvenido Commander",
-        'AddedAlert': "✔️ Alerta habilitada!!!",
-        'RemoveAlert': "❌ Alerta deshabilitada!!!",
+        'AddedAlert': "✔️ Alerta Habilitada!!!",
+        'RemoveAlert': "❌ Alerta Deshabilitada!!!",
         'RemovePhone': "❌ Eliminado!!!",
         'Done': "✔️ Hecho!!!",
         'Subscribed': "Usted esta suscrito!!!",
-        '5ta': "⚠️⚠️ Modulo en 5ta y 42 ⚠️⚠️!!!",
-        'Conf_alerts': "⚠️⚠️ Usted deberia configurar sus alertas ⚠️⚠️!!!",
+        '5ta': "⚠️⚠️ Módulo en 5ta y 42 ⚠️⚠️!!!",
+        'Conf_alerts': "⚠️⚠️ Usted debería configurar sus alertas ⚠️⚠️!!!",
         'start_scrap': "⚠️ Start scratching!!!",
-        'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Su numero debe ser de 8-10 digitos y sin caracteres o simbolos!!!"
+        'WrongNumber': "⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n Su número debe ser de 8-10 dígitos y sin caractéres o símbolos!!!"
     }
 }
 def days_between(max, min):
@@ -231,7 +231,7 @@ def get_alert_options_btn_prod(tgid=None):
 
 def get_help():
     res = '<code> creador:</code>  @mr_charlie93 \n\n'
-    res += '<b>comandos utiles:</b>\n <code>/help, /removeme, /back </code>'
+    res += '<b>comandos útiles:</b>\n <code>/help, /removeme, /back </code>'
     return res
 
 
@@ -245,7 +245,7 @@ def get_static_message(message_key, ulang='English'):
 
 def get_settings_menu(message):
     res = "⚙️ " + get_static_message('adjustSettings', ulang='Spanish') + "\n\n"
-    res +="Eliminar telefono del sistema /removeme"
+    res +="Eliminar teléfono del sistema /removeme"
     return res
 
 
