@@ -27,7 +27,6 @@ def start_scratching():
             response = requests.get(uri.code,headers=headers) # go to the url and get it
         except Exception:
             print(Exception)
-            continue
         
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
@@ -112,7 +111,6 @@ def get_modulos_href(page_url=None):
                             get_modulos_content(url)
     except Exception:
         print(Exception)
-        pass
                 
                         
 def get_modulos_content(page_url=None):
@@ -177,8 +175,7 @@ def get_modulos_content(page_url=None):
                             else:
                                 db.add_modulo(page_url=page_url,title=title,price=price,listado='')
     except Exception:
-        print(Exception)
-        pass                        
+        print(Exception)                      
                 
                         
 
