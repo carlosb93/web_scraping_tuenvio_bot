@@ -23,7 +23,7 @@ def start_scratching():
     # system("ping " + page_url)
     for uri in page_url:
         try:
-            print("Start request to:", uri)
+            print("Start request to:", uri.code)
             response = requests.get(uri.code,headers=headers) # go to the url and get it
         except Exception:
             print(Exception)
