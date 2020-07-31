@@ -25,60 +25,60 @@ def start_scratching():
         try:
             print("Start request to:", uri.code)
             response = requests.get(uri.code,headers=headers) # go to the url and get it
+        
+        
+            print("Status is", response.status_code) # 200, 403, 404, 500, 503
+    
+            if response.status_code != 200: # not equal, == equal
+                print("You can't scrape this", response.status_code)
+        
+            else:
+                print("Scraping..", uri.code)
+                    
+                content = response.content
+                
+                # content = browser.page_source
+                soup = BeautifulSoup(content, 'html.parser')
+                if soup:
+        
+                    if 'https://5tay42.enzona.net/nuevos-productos' == uri.code:
+                            div = soup.find('div', attrs={'class':'center_column col-xs-12 col-sm-9'})
+                            if div:
+                                tag_warning = div.find('p', attrs={'class':'alert alert-warning'})
+                                if tag_warning:
+                                    pass
+                                else:
+                                    module = db.get_modulo(title='5ta y 42')
+                                    if module:
+                                        min = datetime.fromtimestamp(module.created_at/1000)
+                                        max = datetime.fromtimestamp(time.time()/1000)
+                                        created = (max-min).total_seconds() / 60
+                                        if created > 10:
+                                            db.set_modulo(page_url=uri.code,title='5ta y 42',price=None,listado=None)
+                                    else:
+                                        db.add_modulo(page_url=uri.code,title='5ta y 42',price='',listado='')
+                                                           
+                                    
+                
+                        # get_modulos_href_5ta(soup=soup,page_url=uri.code)
+                        # sleep(5)
+                    else:
+                        a = soup.find_all('a', href=True,attrs={'class':'invarseColor'})
+                        if a:
+                            for href in a:
+                                if 'MÓDULOS' in href.text or 'Modulos' in href.text or 'Combos de productos' in href.text or 'Combos' in href.text or 'Miscelaneas' in href.text:  
+                                    href = href.get('href')
+                                    url = uri.code.split('Products')[0]
+                                    url+= href
+                                    print('----------Accediendo a modulo en tu envio con ruta---------')
+                                    print(url)
+                                    get_modulos_href(page_url=url)
+                                else:
+                                    pass
+                        
         except Exception:
             print(Exception)
-            break
-        
-        print("Status is", response.status_code) # 200, 403, 404, 500, 503
-
-        if response.status_code != 200: # not equal, == equal
-            print("You can't scrape this", response.status_code)
-        
-        else:
-            print("Scraping..", uri.code)
-                
-            content = response.content
-            
-            # content = browser.page_source
-            soup = BeautifulSoup(content, 'html.parser')
-            if soup:
-    
-                if 'https://5tay42.enzona.net/nuevos-productos' == uri.code:
-                        div = soup.find('div', attrs={'class':'center_column col-xs-12 col-sm-9'})
-                        if div:
-                            tag_warning = div.find('p', attrs={'class':'alert alert-warning'})
-                            if tag_warning:
-                                pass
-                            else:
-                                module = db.get_modulo(title='5ta y 42')
-                                if module:
-                                    min = datetime.fromtimestamp(module.created_at/1000)
-                                    max = datetime.fromtimestamp(time.time()/1000)
-                                    created = (max-min).total_seconds() / 60
-                                    if created > 10:
-                                        db.set_modulo(page_url=uri.code,title='5ta y 42',price=None,listado=None)
-                                else:
-                                    db.add_modulo(page_url=uri.code,title='5ta y 42',price='',listado='')
-                                                       
-                                
-            
-                    # get_modulos_href_5ta(soup=soup,page_url=uri.code)
-                    # sleep(5)
-                else:
-                    a = soup.find_all('a', href=True,attrs={'class':'invarseColor'})
-                    if a:
-                        for href in a:
-                            if 'MÓDULOS' in href.text or 'Modulos' in href.text or 'Combos de productos' in href.text or 'Combos' in href.text or 'Miscelaneas' in href.text:  
-                                href = href.get('href')
-                                url = uri.code.split('Products')[0]
-                                url+= href
-                                print('----------Accediendo a modulo en tu envio con ruta---------')
-                                print(url)
-                                get_modulos_href(page_url=url)
-                            else:
-                                pass
-                    
-        pass
+            continue
 
 
 def get_modulos_href(page_url=None):
