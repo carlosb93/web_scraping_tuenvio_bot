@@ -1,4 +1,5 @@
 import time
+import sys
 import logging
 import requests
 import pandas as pd
@@ -77,7 +78,7 @@ def start_scratching():
                                     pass
                         
         except Exception:
-            print(Exception)
+            print(sys.exc_info()[0])
             continue
 
 
@@ -111,7 +112,7 @@ def get_modulos_href(page_url=None):
                             url+= href
                             get_modulos_content(url)
     except Exception:
-        print(Exception)
+        print(sys.exc_info()[0])
                 
                         
 def get_modulos_content(page_url=None):
@@ -176,7 +177,7 @@ def get_modulos_content(page_url=None):
                             else:
                                 db.add_modulo(page_url=page_url,title=title,price=price,listado='')
     except Exception:
-        print(Exception)                      
+        print(sys.exc_info()[0])                      
                 
                         
 
