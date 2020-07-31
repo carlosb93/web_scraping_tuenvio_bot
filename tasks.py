@@ -23,6 +23,7 @@ def start_scratching():
     # system("ping " + page_url)
     for uri in page_url:
         try:
+            print("Start request to:", page_url)
             response = requests.get(uri.code,headers=headers) # go to the url and get it
         except Exception:
             continue
@@ -82,6 +83,7 @@ def start_scratching():
 def get_modulos_href(page_url=None):
     # modulo parser
     try:
+        print("Start request to:", page_url)
         response = requests.get(page_url,headers=headers) # go to the url and get it
     
      # go to the url and get it
@@ -114,6 +116,7 @@ def get_modulos_href(page_url=None):
 def get_modulos_content(page_url=None):
     # modulo parser
     try:
+        print("Start request to:", page_url) 
         response = requests.get(page_url,headers=headers) # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
