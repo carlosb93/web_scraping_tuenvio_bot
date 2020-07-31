@@ -27,6 +27,7 @@ def start_scratching():
             response = requests.get(uri.code,headers=headers) # go to the url and get it
         except Exception:
             print(Exception)
+            break
         
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
