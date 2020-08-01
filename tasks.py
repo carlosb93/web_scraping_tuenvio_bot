@@ -11,8 +11,8 @@ import db_handler as db
 
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36'}
-proxies = { 'http': 'http://proxy.server:3128',
-            'https': 'http://proxy.server:3128'
+proxies = { 'http': 'http://190.107.5.51:3128',
+            'https': 'http:/190.107.5.51:3128'
                   }
       
     
@@ -25,7 +25,7 @@ def start_scratching():
     for uri in page_url:
         try:
             print("Start request to:", uri.code)
-            response = requests.get(uri.code,headers=headers) # go to the url and get it
+            response = requests.get(uri.code,headers=headers,proxies=proxies) # go to the url and get it
         
         
             print("Status is", response.status_code) # 200, 403, 404, 500, 503
@@ -86,7 +86,7 @@ def get_modulos_href(page_url=None):
     # modulo parser
     try:
         print("Start request to:", page_url)
-        response = requests.get(page_url,headers=headers) # go to the url and get it
+        response = requests.get(page_url,headers=headers,proxies=proxies) # go to the url and get it
     
      # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
@@ -119,7 +119,7 @@ def get_modulos_content(page_url=None):
     # modulo parser
     try:
         print("Start request to:", page_url) 
-        response = requests.get(page_url,headers=headers) # go to the url and get it
+        response = requests.get(page_url,headers=headers,proxies=proxies) # go to the url and get it
         print("Status is", response.status_code) # 200, 403, 404, 500, 503
 
         if response.status_code != 200: # not equal, == equal
