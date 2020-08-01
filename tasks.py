@@ -11,8 +11,8 @@ import db_handler as db
 
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36'}
-proxies = { 'http': 'http://190.107.5.51:3128',
-            'https': 'http://190.107.5.51:3128'
+proxies = { 'http': '190.107.5.51:3128',
+            'https': '190.107.5.51:3128'
                   }
       
     
