@@ -15,6 +15,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.events import SchedulerEvent, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from navigation import Navigation, go_to
 from config import TOKEN, REQUEST_KWARGS
 
@@ -211,13 +212,6 @@ async def alerta_tu_envio(page_url=None,title=None,price=None,prod_list=None):
         
         return True                   
 
-            
-            
-
-
-                   
-                
-       
 
 @dp.callback_query_handler(state='*')
 async def process_callback_button(callback_query: types.CallbackQuery):
@@ -286,16 +280,35 @@ async def router(message: types.Message, state: FSMContext):
         elif current_state == Navigation.admin.state:
             await process_admin(message)
 
-        
+def my_listener(event):
+    if event.exception:
+        print('The job crashed :(')
+    else:
+        print('The job worked :)')
+        job = bgscheduler.get_job(event.job_id)
+        if job.name == 'start_scratching':
+            print('Running check_db_alert')
+            # lookup the second job (assuming it's a scheduled job)
+            jobs = scheduler.get_jobs()
+            second_job = next((j for j in jobs if j.name == 'db_check'), None)
+            if second_job:
+                # run the second job immediately
+                second_job.modify(next_run_time=datetime.now())
+            else:
+                # job not scheduled, add it and run now
+                scheduler.add_job(check_db_alert, 'interval', minutes=50,name='db_check', kwargs={'bot': bot})
+                
+           
 
-def schedule_all_taskts():
-    bgscheduler.add_job(tasks.start_scratching, 'interval', minutes=2)
+def schedule_all_tasks():
+    bgscheduler.add_job(tasks.start_scratching, 'interval', minutes=1, name='start_scratching')
+    bgscheduler.add_listener(my_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
     bgscheduler.start()
     
-    scheduler.add_job(check_db_alert, 'cron', hour='*', minute='*', second=40, kwargs={'bot': bot})    
-    scheduler.start()
+    scheduler.add_job(check_db_alert, 'cron', hour='23', minute=30, name='db_check', kwargs={'bot': bot})   
+    scheduler.start()     
     
 
 if __name__ == '__main__':
-    schedule_all_taskts()
+    schedule_all_tasks()
     executor.start_polling(dp, skip_updates=True)
